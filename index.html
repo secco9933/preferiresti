@@ -2,8 +2,10 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Preferiresti?</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<title>Preferiresti...</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
 <style>
 :root {
@@ -32,7 +34,7 @@ body { font-family: var(--font-b); background: var(--bg); color: var(--text); mi
   padding: 1.1rem 2rem; border-bottom: 1px solid var(--border);
   position: sticky; top: 0; background: var(--bg); z-index: 100;
 }
-.logo { font-family: var(--font-d); font-size: 1.1rem; font-weight: 800; letter-spacing: -0.02em; cursor: pointer; }
+.logo { font-family: var(--font-d); font-size: 1.1rem; font-weight: 800; letter-spacing: -0.02em; cursor: pointer; color: var(--text); }
 .logo span { color: var(--accent); }
 .topbar-right { display: flex; gap: 8px; }
 
@@ -43,7 +45,7 @@ body { font-family: var(--font-b); background: var(--bg); color: var(--text); mi
 @keyframes up { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
 
 /* ── type ── */
-.page-title { font-family: var(--font-d); font-weight: 800; font-size: 2rem; letter-spacing: -0.04em; line-height: 1.1; margin-bottom: .35rem; }
+.page-title { font-family: var(--font-d); font-weight: 800; font-size: 2rem; letter-spacing: -0.04em; line-height: 1.1; margin-bottom: .35rem; color: var(--text); }
 .page-title .hl { color: var(--accent); }
 .page-sub { color: var(--text2); font-size: .88rem; margin-bottom: 2rem; font-weight: 300; }
 .section-label { font-family: var(--font-d); font-size: .6rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--text3); margin-bottom: .65rem; }
@@ -199,13 +201,46 @@ input[type="text"]::placeholder { color: var(--text3); }
 .sel-chip.on { background: var(--accent-dim); border-color: var(--accent-border); color: var(--accent); font-weight: 500; }
 .sel-chip-grid { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 9px; }
 
+
+
+/* ── vertical option list (setup) ── */
+.opt-vert-list { display: flex; flex-direction: column; gap: 4px; }
+.opt-vert-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px; border-radius: var(--radius);
+  border: 1px solid var(--border); cursor: pointer;
+  background: var(--surface2); color: var(--text2);
+  font-size: .88rem; transition: all .15s; user-select: none;
+}
+.opt-vert-item:hover { border-color: var(--border2); color: var(--text); }
+.opt-vert-item.on { background: var(--accent-dim); border-color: var(--accent-border); color: var(--accent); }
+.opt-vert-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  background: var(--border2); transition: background .15s;
+}
+.opt-vert-item.on .opt-vert-dot { background: var(--accent); }
+
+/* ── mobile ── */
+@media (max-width: 600px) {
+  .main { padding: 1.25rem 1rem; }
+  .topbar { padding: .9rem 1rem; }
+  .page-title { font-size: 1.6rem; }
+  .player-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+  .choices { gap: 8px; }
+  .choice-btn { padding: 1.6rem .6rem; font-size: .95rem; min-height: 90px; }
+  .profile-name { font-size: 1.3rem; }
+  .stat-row { gap: 1rem; }
+  .sel-chip-grid { gap: 6px; }
+  .sel-chip { padding: 5px 11px; font-size: .78rem; }
+  .btn { padding: 8px 14px; font-size: .82rem; }
+  .nav { gap: 6px; }
+}
 </style>
 </head>
 <body>
 <div class="topbar">
-  <div class="logo" onclick="goHome()">preferi<span>resti?</span></div>
+  <div class="logo" onclick="goHome()">Preferiresti...</div>
   <div class="topbar-right">
-    <button class="btn btn-sm btn-ghost" id="btn-config" style="display:none" onclick="goConfig()">Modifica pool</button>
     <button class="btn btn-sm btn-ghost" id="btn-home" style="display:none" onclick="goHome()">← Home</button>
   </div>
 </div>
@@ -214,106 +249,48 @@ input[type="text"]::placeholder { color: var(--text3); }
 
   <!-- ══ HOME ══ -->
   <div class="screen active" id="s-home">
-    <div class="page-title">preferi<span class="hl">resti?</span></div>
+    <div class="page-title">Preferiresti...</div>
     <p class="page-sub">Centro di controllo.</p>
 
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.65rem">
-      <div class="section-label" style="margin:0">Campioni</div>
-      <button class="btn btn-sm" onclick="toggleQuickAdd()">+ Aggiungi</button>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem">
+      <div class="section-label" style="margin:0">Giocatori</div>
+      <button class="btn btn-sm" onclick="toggleHomeAdd()">+ Aggiungi</button>
     </div>
-    <div id="quick-add-panel" style="display:none;margin-bottom:.85rem">
+    <div id="home-add-panel" style="display:none;margin-bottom:.75rem">
       <div class="input-row">
-        <input type="text" id="inp-quick-option" placeholder="Nome campione..." maxlength="40" />
-        <button class="btn btn-accent" onclick="quickAddOption()">+</button>
+        <input type="text" id="inp-home-player" placeholder="Nome giocatore..." maxlength="40" />
+        <button class="btn btn-accent" onclick="homeAddPlayer()">+</button>
       </div>
     </div>
-    <div class="card" style="margin-bottom:1.6rem">
-      <div class="option-chip-list" id="home-options"></div>
-      <div class="empty-hint" id="home-options-empty" style="display:none">Nessun campione ancora.</div>
-    </div>
-
-    <div class="section-label">Giocatori</div>
     <div class="player-grid" id="home-players"></div>
+    <div class="empty-hint" id="home-pl-empty" style="display:none;margin-top:.25rem;margin-bottom:1rem">Nessun giocatore ancora.</div>
 
-    <div class="nav">
-      <button class="btn btn-accent" onclick="goSetup()">Nuova partita →</button>
-      <button class="btn btn-ghost" onclick="goConfig()">Gestisci pool</button>
-    </div>
+
   </div>
 
-  <!-- ══ CONFIG ══ -->
-  <div class="screen" id="s-config">
-    <div class="page-title">Configura i <span class="hl">pool</span></div>
-    <p class="page-sub">I dati vengono salvati automaticamente.</p>
 
-    <div class="tab-row">
-      <button class="tab-btn active" id="tab-p" onclick="switchTab('players')">Pool 1 — Giocatori</button>
-      <button class="tab-btn" id="tab-o" onclick="switchTab('options')">Pool 2 — Campioni</button>
-    </div>
-
-    <div id="panel-players">
-      <div class="card">
-        <div class="section-label">Aggiungi giocatore</div>
-        <div class="input-row">
-          <input type="text" id="inp-player" placeholder="Nome amico..." maxlength="40" />
-          <button class="btn btn-accent" onclick="addItem('players')">+</button>
-        </div>
-        <div class="tag-list" id="tags-players"></div>
-        <div class="empty-hint" id="eh-players" style="display:none">Nessun giocatore ancora.</div>
-      </div>
-    </div>
-
-    <div id="panel-options" style="display:none">
-      <div class="card">
-        <div class="section-label">Aggiungi campione</div>
-        <div class="input-row">
-          <input type="text" id="inp-option" placeholder="Nome campione..." maxlength="40" />
-          <button class="btn btn-accent" onclick="addItem('options')">+</button>
-        </div>
-        <div class="tag-list" id="tags-options"></div>
-        <div class="empty-hint" id="eh-options" style="display:none">Nessun campione ancora.</div>
-      </div>
-    </div>
-
-    <div class="nav">
-      <button class="btn btn-accent" onclick="goHome()">← Home</button>
-      <span class="err" id="config-err"></span>
-    </div>
-  </div>
 
   <!-- ══ SETUP ══ -->
   <div class="screen" id="s-setup">
-    <div class="page-title">Chi partecipa <span class="hl">oggi?</span></div>
-    <p class="page-sub">Seleziona i campioni da includere in questa partita.</p>
+    <div class="page-title">Scegli i campioni</div>
+    <p class="page-sub">Seleziona chi sfidare in questa partita.</p>
 
     <div class="card">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-        <div class="section-label" style="margin:0">Giocatori</div>
-        <div style="display:flex;gap:8px;align-items:center">
-          <button class="btn btn-sm btn-ghost" onclick="toggleAllPlayers(true)">Tutti</button>
-          <button class="btn btn-sm btn-ghost" onclick="toggleAllPlayers(false)">Nessuno</button>
-          <span style="font-size:.72rem;color:var(--text3)" id="su-pcount"></span>
-        </div>
-      </div>
-      <div class="sel-chip-grid" id="su-chip-players"></div>
-    </div>
-
-    <div class="card">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
         <div class="section-label" style="margin:0">Campioni</div>
-        <div style="display:flex;gap:8px;align-items:center">
+        <div style="display:flex;gap:6px;align-items:center">
           <button class="btn btn-sm btn-ghost" onclick="toggleAllChips(true)">Tutti</button>
           <button class="btn btn-sm btn-ghost" onclick="toggleAllChips(false)">Nessuno</button>
           <span style="font-size:.72rem;color:var(--text3)" id="su-ocount"></span>
         </div>
       </div>
-      <div class="sel-chip-grid" id="su-chip-options"></div>
+      <div class="input-row" style="margin-bottom:10px">
+        <input type="text" id="inp-setup-option" placeholder="Aggiungi campione..." maxlength="40" />
+        <button class="btn btn-accent" onclick="setupAddOption()">+</button>
+      </div>
+      <div class="opt-vert-list" id="su-chip-options"></div>
     </div>
 
-    <div class="card card-accent">
-      <div class="section-label" style="color:rgba(232,255,71,.45)">Riepilogo</div>
-      <div style="font-family:var(--font-d);font-weight:700;font-size:1.05rem;color:var(--accent)" id="su-summary"></div>
-    </div>
     <div class="nav">
       <button class="btn btn-accent" onclick="startGame()">Inizia!</button>
       <button class="btn btn-ghost" onclick="goHome()">← Home</button>
@@ -342,7 +319,7 @@ input[type="text"]::placeholder { color: var(--text3); }
 
   <!-- ══ RESULTS ══ -->
   <div class="screen" id="s-results">
-    <div class="page-title">Risultati <span class="hl">finali</span></div>
+    <div class="page-title">Risultati finali</div>
     <p class="page-sub">Classifica personale salvata nello storico di ogni giocatore.</p>
     <div class="player-tabs" id="res-tabs"></div>
     <div class="card">
@@ -461,7 +438,6 @@ function show(id) {
 }
 
 function setTopbar(mode) {
-  document.getElementById('btn-config').style.display = (mode !== 'config' && mode !== 'home') ? 'inline-block' : 'none';
   document.getElementById('btn-home').style.display = (mode !== 'home') ? 'inline-block' : 'none';
 }
 
@@ -470,9 +446,25 @@ function setTopbar(mode) {
 // ═══════════════════════════════
 function goHome() {
   renderHomePlayers();
-  renderHomeOptions();
   show('s-home');
   setTopbar('home');
+}
+
+function toggleHomeAdd() {
+  const panel = document.getElementById('home-add-panel');
+  const open = panel.style.display !== 'none';
+  panel.style.display = open ? 'none' : 'block';
+  if (!open) setTimeout(() => document.getElementById('inp-home-player').focus(), 50);
+}
+
+function homeAddPlayer() {
+  const inp = document.getElementById('inp-home-player');
+  const val = inp.value.trim();
+  if (!val) return;
+  const arr = DB.players;
+  if (!arr.includes(val)) { arr.push(val); DB.players = arr; }
+  inp.value = '';
+  renderHomePlayers();
 }
 
 function renderHomePlayers() {
@@ -481,7 +473,7 @@ function renderHomePlayers() {
   const grid = document.getElementById('home-players');
   grid.innerHTML = '';
   if (players.length === 0) {
-    grid.innerHTML = '<div class="empty-hint">Nessun giocatore. Vai in "Gestisci pool".</div>';
+    grid.innerHTML = '<div class="empty-hint">Nessun giocatore ancora.</div>';
     return;
   }
   players.forEach(name => {
@@ -490,177 +482,73 @@ function renderHomePlayers() {
     card.className = 'player-card';
     const initials = name.trim().split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);
     card.innerHTML = `
-      <div style="display:flex;align-items:center;gap:8px">
+      <div style="display:flex;align-items:center;gap:8px;cursor:pointer" onclick="goProfile('${name}')">
         <div style="width:32px;height:32px;border-radius:50%;background:var(--accent-dim);border:1px solid var(--accent-border);display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-weight:800;font-size:.7rem;color:var(--accent)">${initials}</div>
         <div class="player-card-name">${name}</div>
       </div>
-      ${count > 0 ? `<div class="player-card-badge">${count} ${count === 1 ? 'partita' : 'partite'}</div>` : ''}
-      <div class="player-card-meta">${count > 0 ? 'Tocca per vedere la classifica' : 'Mai giocato'}</div>
+      ${count > 0 ? `<div class="player-card-badge">${count} ${count === 1 ? 'partita' : 'partite'}</div>` : '<div style="height:4px"></div>'}
+      <button class="btn btn-accent btn-sm" style="width:100%;margin-top:4px" onclick="goSetupForPlayer('${name}')">Gioca</button>
     `;
-    card.onclick = () => goProfile(name);
     grid.appendChild(card);
   });
 }
 
-function renderHomeOptions() {
-  const options = DB.options;
-  const disabled = DB.disabled;
-  const container = document.getElementById('home-options');
-  const empty = document.getElementById('home-options-empty');
-  container.innerHTML = '';
-  if (options.length === 0) { empty.style.display = 'block'; return; }
-  empty.style.display = 'none';
-  options.forEach(name => {
-    const on = !disabled.includes(name);
-    const chip = document.createElement('div');
-    chip.className = 'sel-chip' + (on ? ' on' : '');
-    chip.textContent = name;
-    chip.onclick = () => { DB.toggleDisabled(name); renderHomeOptions(); };
-    container.appendChild(chip);
-  });
-}
 
-function toggleQuickAdd() {
-  const panel = document.getElementById('quick-add-panel');
-  const visible = panel.style.display !== 'none';
-  panel.style.display = visible ? 'none' : 'block';
-  if (!visible) setTimeout(() => document.getElementById('inp-quick-option').focus(), 50);
-}
 
-function quickAddOption() {
-  const input = document.getElementById('inp-quick-option');
-  const val = input.value.trim();
-  if (!val) return;
-  const arr = DB.options;
-  if (!arr.includes(val)) { arr.push(val); DB.options = arr; }
-  input.value = '';
-  renderHomeOptions();
-}
 
-// ═══════════════════════════════
-//  CONFIG
-// ═══════════════════════════════
-let activeTab = 'players';
-
-function goConfig() {
-  renderAllTags();
-  show('s-config');
-  setTopbar('config');
-}
-
-function switchTab(tab) {
-  activeTab = tab;
-  document.getElementById('panel-players').style.display = tab === 'players' ? 'block' : 'none';
-  document.getElementById('panel-options').style.display = tab === 'options' ? 'block' : 'none';
-  document.getElementById('tab-p').classList.toggle('active', tab === 'players');
-  document.getElementById('tab-o').classList.toggle('active', tab === 'options');
-}
-
-function addItem(pool) {
-  const inputId = pool === 'players' ? 'inp-player' : 'inp-option';
-  const input = document.getElementById(inputId);
-  const val = input.value.trim();
-  if (!val) return;
-  const arr = DB[pool];
-  if (arr.includes(val)) { input.value = ''; return; }
-  arr.push(val);
-  DB[pool] = arr;
-  input.value = '';
-  renderAllTags();
-  document.getElementById('config-err').textContent = '';
-}
-
-function removeItem(pool, i) {
-  const arr = DB[pool];
-  arr.splice(i, 1);
-  DB[pool] = arr;
-  renderAllTags();
-}
-
-function renderAllTags() {
-  ['players', 'options'].forEach(pool => {
-    const arr = DB[pool];
-    const c = document.getElementById('tags-' + pool);
-    const eh = document.getElementById('eh-' + pool);
-    c.innerHTML = '';
-    arr.forEach((name, i) => {
-      const t = document.createElement('div'); t.className = 'tag';
-      t.innerHTML = `${name} <button class="tag-rm" onclick="removeItem('${pool}',${i})">×</button>`;
-      c.appendChild(t);
-    });
-    if (eh) eh.style.display = arr.length === 0 ? 'block' : 'none';
-  });
-}
 
 // ═══════════════════════════════
 //  SETUP
 // ═══════════════════════════════
 let setupSelectedOptions = new Set();
-let setupSelectedPlayers = new Set();
 
-function goSetup() {
-  const players = DB.players;
+let currentGamePlayer = null;
+
+function goSetupForPlayer(name) {
+  currentGamePlayer = name;
   const options = DB.options;
-  if (players.length < 1) { goConfig(); switchTab('players'); document.getElementById('config-err').textContent = 'Aggiungi almeno 1 giocatore.'; return; }
-  if (options.length < 2) { goConfig(); switchTab('options'); document.getElementById('config-err').textContent = 'Aggiungi almeno 2 campioni.'; return; }
-
-  // Pre-select only enabled options (not disabled from home)
   const disabled = DB.disabled;
   setupSelectedOptions = new Set(options.filter(o => !disabled.includes(o)));
-
-  setupSelectedPlayers = new Set(players);
   document.getElementById('su-err').textContent = '';
-
-  renderSetupPlayerChips();
   renderSetupChips();
   updateSetupSummary();
   show('s-setup');
   setTopbar('setup');
 }
 
+function goSetup() {
+  if (currentGamePlayer) goSetupForPlayer(currentGamePlayer);
+}
+
 function renderSetupChips() {
   const options = DB.options;
-  const grid = document.getElementById('su-chip-options');
-  grid.innerHTML = '';
-  options.forEach(name => {
-    const chip = document.createElement('div');
+  const list = document.getElementById('su-chip-options');
+  list.innerHTML = '';
+  options.forEach((name, i) => {
     const on = setupSelectedOptions.has(name);
-    chip.className = 'sel-chip' + (on ? ' on' : '');
-    chip.textContent = name;
-    chip.onclick = () => {
+    const item = document.createElement('div');
+    item.className = 'opt-vert-item' + (on ? ' on' : '');
+    item.innerHTML = `<div class="opt-vert-dot"></div><span style="flex:1">${name}</span><button class="tag-rm" onclick="removeSetupOption(${i})" style="margin-left:8px;font-size:1rem">×</button>`;
+    item.querySelector('.opt-vert-dot').addEventListener('click', () => {});
+    item.onclick = (e) => {
+      if (e.target.classList.contains('tag-rm')) return;
       if (setupSelectedOptions.has(name)) setupSelectedOptions.delete(name);
       else setupSelectedOptions.add(name);
-      chip.classList.toggle('on', setupSelectedOptions.has(name));
+      item.classList.toggle('on', setupSelectedOptions.has(name));
+      item.querySelector('.opt-vert-dot').style.background = setupSelectedOptions.has(name) ? 'var(--accent)' : '';
       updateSetupSummary();
     };
-    grid.appendChild(chip);
+    list.appendChild(item);
   });
 }
 
-function renderSetupPlayerChips() {
-  const players = DB.players;
-  const grid = document.getElementById('su-chip-players');
-  grid.innerHTML = '';
-  players.forEach(name => {
-    const chip = document.createElement('div');
-    const on = setupSelectedPlayers.has(name);
-    chip.className = 'sel-chip' + (on ? ' on' : '');
-    chip.textContent = name;
-    chip.onclick = () => {
-      if (setupSelectedPlayers.has(name)) setupSelectedPlayers.delete(name);
-      else setupSelectedPlayers.add(name);
-      chip.classList.toggle('on', setupSelectedPlayers.has(name));
-      updateSetupSummary();
-    };
-    grid.appendChild(chip);
-  });
-}
-
-function toggleAllPlayers(on) {
-  const players = DB.players;
-  if (on) players.forEach(p => setupSelectedPlayers.add(p));
-  else setupSelectedPlayers.clear();
-  renderSetupPlayerChips();
+function removeSetupOption(i) {
+  const arr = DB.options;
+  const name = arr[i];
+  arr.splice(i, 1);
+  DB.options = arr;
+  setupSelectedOptions.delete(name);
+  renderSetupChips();
   updateSetupSummary();
 }
 
@@ -672,37 +560,36 @@ function toggleAllChips(on) {
   updateSetupSummary();
 }
 
+function setupAddOption() {
+  const inp = document.getElementById('inp-setup-option');
+  const val = inp.value.trim();
+  if (!val) return;
+  const arr = DB.options;
+  if (!arr.includes(val)) { arr.push(val); DB.options = arr; }
+  setupSelectedOptions.add(val);
+  inp.value = '';
+  renderSetupChips();
+  updateSetupSummary();
+}
+
 function updateSetupSummary() {
   const selOpts = setupSelectedOptions.size;
-  const selPl = setupSelectedPlayers.size;
-  const pairs = selOpts * (selOpts - 1) / 2;
-  document.getElementById('su-pcount').textContent = selPl + ' / ' + DB.players.length + ' selezionati';
   document.getElementById('su-ocount').textContent = selOpts + ' / ' + DB.options.length + ' selezionati';
-  if (selPl < 1) {
-    document.getElementById('su-summary').textContent = 'Seleziona almeno 1 giocatore.';
-  } else if (selOpts < 2) {
-    document.getElementById('su-summary').textContent = 'Seleziona almeno 2 campioni.';
-  } else {
-    document.getElementById('su-summary').textContent = `${selPl} × ${pairs} sfide = ${selPl * pairs} domande totali`;
-  }
 }
 
 // ═══════════════════════════════
 //  GAME
 // ═══════════════════════════════
 function startGame() {
-  const players = [...setupSelectedPlayers];
+  const player = currentGamePlayer;
   const options = [...setupSelectedOptions];
-  if (players.length < 1) { document.getElementById('su-err').textContent = 'Seleziona almeno 1 giocatore.'; return; }
+  if (!player) { document.getElementById('su-err').textContent = 'Nessun giocatore selezionato.'; return; }
   if (options.length < 2) { document.getElementById('su-err').textContent = 'Seleziona almeno 2 campioni.'; return; }
-  gs.matches = {};
-  players.forEach(p => gs.matches[p] = []);
+  gs.matches = {}; gs.matches[player] = [];
   gs.rounds = [];
-  players.forEach(player => {
-    for (let i = 0; i < options.length; i++)
-      for (let j = i + 1; j < options.length; j++)
-        gs.rounds.push({ player, pair: [options[i], options[j]] });
-  });
+  for (let i = 0; i < options.length; i++)
+    for (let j = i + 1; j < options.length; j++)
+      gs.rounds.push({ player, pair: [options[i], options[j]] });
   gs.currentRound = 0;
   gs.pendingChoice = null;
   renderRound();
@@ -870,9 +757,8 @@ function fmtDate(iso) {
 // ═══════════════════════════════
 document.addEventListener('keydown', e => {
   if (e.key !== 'Enter') return;
-  if (document.activeElement.id === 'inp-player') addItem('players');
-  else if (document.activeElement.id === 'inp-option') addItem('options');
-  else if (document.activeElement.id === 'inp-quick-option') quickAddOption();
+  if (document.activeElement.id === 'inp-home-player') homeAddPlayer();
+  else if (document.activeElement.id === 'inp-setup-option') setupAddOption();
 });
 
 // ═══════════════════════════════
