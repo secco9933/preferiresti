@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Preferiresti?</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
+<style>
+:root {
+  --bg: #0e0e0f;
+  --surface: #1a1a1c;
+  --surface2: #242426;
+  --border: rgba(255,255,255,0.08);
+  --border2: rgba(255,255,255,0.15);
+  --accent: #e8ff47;
+  --accent-dim: rgba(232,255,71,0.10);
+  --accent-border: rgba(232,255,71,0.25);
+  --text: #f0ede8;
+  --text2: rgba(240,237,232,0.50);
+  --text3: rgba(240,237,232,0.25);
+  --red: #ff5c5c;
+  --radius: 14px;
+  --font-d: 'Syne', sans-serif;
+  --font-b: 'DM Sans', sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-b); background: var(--bg); color: var(--text); min-height: 100vh; }
+
+/* ── topbar ── */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.1rem 2rem; border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; background: var(--bg); z-index: 100;
+}
+.logo { font-family: var(--font-d); font-size: 1.1rem; font-weight: 800; letter-spacing: -0.02em; cursor: pointer; }
+.logo span { color: var(--accent); }
+.topbar-right { display: flex; gap: 8px; }
+
+/* ── layout ── */
+.main { max-width: 720px; margin: 0 auto; padding: 2rem 1.5rem; }
+.screen { display: none; }
+.screen.active { display: block; animation: up 0.28s ease; }
+@keyframes up { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+/* ── type ── */
+.page-title { font-family: var(--font-d); font-weight: 800; font-size: 2rem; letter-spacing: -0.04em; line-height: 1.1; margin-bottom: .35rem; }
+.page-title .hl { color: var(--accent); }
+.page-sub { color: var(--text2); font-size: .88rem; margin-bottom: 2rem; font-weight: 300; }
+.section-label { font-family: var(--font-d); font-size: .6rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--text3); margin-bottom: .65rem; }
+
+/* ── card ── */
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.1rem 1.4rem; margin-bottom: .85rem; }
+.card-accent { background: var(--accent-dim); border-color: var(--accent-border); }
+
+/* ── tags ── */
+.tag-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 9px; }
+.tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: var(--surface2); border: 1px solid var(--border2);
+  border-radius: 100px; padding: 4px 11px; font-size: .78rem; color: var(--text);
+  animation: pop .18s ease;
+}
+@keyframes pop { from { transform: scale(.82); opacity:0; } to { transform: scale(1); opacity:1; } }
+.tag-rm { background: none; border: none; cursor: pointer; color: var(--text3); font-size: .95rem; line-height:1; transition: color .15s; padding:0; }
+.tag-rm:hover { color: var(--red); }
+.empty-hint { font-size: .78rem; color: var(--text3); font-style: italic; margin-top: 8px; }
+
+/* ── inputs ── */
+.input-row { display: flex; gap: 8px; }
+input[type="text"] {
+  flex: 1; background: var(--surface2); border: 1px solid var(--border2);
+  border-radius: 10px; padding: 8px 13px; font-family: var(--font-b);
+  font-size: .85rem; color: var(--text); outline: none; transition: border-color .2s;
+}
+input[type="text"]:focus { border-color: var(--accent); }
+input[type="text"]::placeholder { color: var(--text3); }
+
+/* ── buttons ── */
+.btn {
+  padding: 8px 18px; border-radius: 10px; font-family: var(--font-b);
+  font-size: .85rem; font-weight: 500; cursor: pointer;
+  border: 1px solid var(--border2); background: transparent; color: var(--text);
+  transition: background .15s, border-color .15s; white-space: nowrap;
+}
+.btn:hover { background: var(--surface2); }
+.btn-accent { background: var(--accent); color: #0e0e0f; border-color: transparent; font-family: var(--font-d); font-weight: 700; }
+.btn-accent:hover { background: #d4ea2e; }
+.btn-ghost { border-color: transparent; color: var(--text2); }
+.btn-ghost:hover { color: var(--text); background: var(--surface2); border-color: var(--border); }
+.btn-sm { padding: 5px 13px; font-size: .78rem; }
+.btn-danger { border-color: rgba(255,92,92,.3); color: var(--red); }
+.btn-danger:hover { background: rgba(255,92,92,.08); }
+.nav { display: flex; gap: 8px; align-items: center; margin-top: 1.4rem; flex-wrap: wrap; }
+.err { font-size: .78rem; color: var(--red); }
+
+/* ── tab row ── */
+.tab-row { display: flex; gap: 4px; padding: 4px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 1.4rem; }
+.tab-btn { flex:1; padding: 7px; border-radius: 7px; font-size: .78rem; font-weight: 500; cursor: pointer; border: none; background: transparent; color: var(--text2); font-family: var(--font-b); transition: all .15s; }
+.tab-btn.active { background: var(--surface2); color: var(--text); border: 1px solid var(--border2); }
+
+/* ── progress ── */
+.prog-wrap { margin-bottom: 1.6rem; }
+.prog-meta { display: flex; justify-content: space-between; font-size: .75rem; color: var(--text2); margin-bottom: 7px; }
+.prog-bar { height: 3px; background: var(--surface2); border-radius: 2px; }
+.prog-fill { height: 3px; background: var(--accent); border-radius: 2px; transition: width .4s ease; }
+
+/* ── game ── */
+.player-badge {
+  display: inline-flex; align-items: center;
+  background: var(--accent-dim); border: 1px solid var(--accent-border);
+  border-radius: 100px; padding: 5px 14px;
+  font-family: var(--font-d); font-size: .72rem; font-weight: 700;
+  color: var(--accent); letter-spacing: .05em; text-transform: uppercase; margin-bottom: 1.4rem;
+}
+.q-title { font-family: var(--font-d); font-weight: 800; font-size: 1.55rem; letter-spacing: -.04em; text-align: center; margin-bottom: 1.6rem; }
+.choices { display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px; align-items: center; }
+.choice-btn {
+  padding: 2.2rem 1rem; background: var(--surface); border: 1px solid var(--border2);
+  border-radius: var(--radius); font-family: var(--font-d); font-size: 1.05rem; font-weight: 700;
+  color: var(--text); cursor: pointer; text-align: center; letter-spacing: -.02em;
+  min-height: 110px; display: flex; align-items: center; justify-content: center;
+  transition: border-color .15s, background .15s, transform .15s;
+}
+.choice-btn:hover { background: var(--surface2); transform: translateY(-2px); }
+.choice-btn.selected { border: 2px solid var(--accent); background: var(--accent-dim); color: var(--accent); transform: translateY(-3px); }
+.vs-lbl { font-family: var(--font-d); font-size: .65rem; font-weight: 800; color: var(--text3); text-align: center; }
+
+/* ── players list (home) ── */
+.player-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; margin-bottom: 1.4rem; }
+.player-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1rem 1.1rem; cursor: pointer;
+  transition: border-color .15s, transform .15s;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.player-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+.player-card-name { font-family: var(--font-d); font-weight: 700; font-size: .95rem; }
+.player-card-meta { font-size: .75rem; color: var(--text2); }
+.player-card-badge {
+  display: inline-block; background: var(--accent-dim); border: 1px solid var(--accent-border);
+  color: var(--accent); font-size: .65rem; font-family: var(--font-d); font-weight: 700;
+  letter-spacing: .06em; text-transform: uppercase; border-radius: 100px; padding: 2px 8px;
+  width: fit-content;
+}
+
+/* ── profile / history ── */
+.profile-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1.6rem; gap: 1rem; }
+.profile-avatar {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: var(--accent-dim); border: 1px solid var(--accent-border);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-d); font-weight: 800; font-size: 1.2rem; color: var(--accent);
+  flex-shrink: 0;
+}
+.profile-info { flex: 1; }
+.profile-name { font-family: var(--font-d); font-weight: 800; font-size: 1.6rem; letter-spacing: -.04em; }
+.profile-sub { color: var(--text2); font-size: .82rem; margin-top: 2px; }
+.stat-row { display: flex; gap: 1.5rem; margin-top: .75rem; }
+.stat { display: flex; flex-direction: column; gap: 2px; }
+.stat-val { font-family: var(--font-d); font-weight: 800; font-size: 1.1rem; color: var(--accent); }
+.stat-lbl { font-size: .7rem; color: var(--text3); text-transform: uppercase; letter-spacing: .06em; font-family: var(--font-d); }
+
+
+
+/* ── ranking (results) ── */
+.player-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 1.4rem; }
+.ptab { padding: 6px 14px; border-radius: 100px; font-size: .78rem; font-weight: 500; cursor: pointer; color: var(--text2); background: transparent; border: 1px solid var(--border); transition: all .15s; }
+.ptab:hover { border-color: var(--border2); color: var(--text); }
+.ptab.active { background: var(--accent); color: #0e0e0f; border-color: transparent; font-weight: 700; }
+.rank-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); animation: up .2s ease both; }
+.rank-item:last-child { border-bottom: none; }
+.rank-num { font-family: var(--font-d); font-size: .65rem; font-weight: 800; color: var(--text3); min-width: 20px; }
+.rank-num.gold { color: var(--accent); }
+.rank-name { font-size: .92rem; flex: 1; }
+.rank-bar-wrap { width: 90px; height: 3px; background: var(--surface2); border-radius: 2px; }
+.rank-bar { height: 3px; background: var(--accent); border-radius: 2px; transition: width .5s ease; }
+.rank-score { font-family: var(--font-d); font-weight: 700; font-size: .78rem; color: var(--text2); min-width: 32px; text-align: right; }
+
+.divider { height: 1px; background: var(--border); margin: 1.2rem 0; }
+/* ── option chips (home) ── */
+.option-chip-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.option-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: var(--surface2); border: 1px solid var(--border2);
+  border-radius: 100px; padding: 4px 11px; font-size: .78rem; color: var(--text);
+}
+.option-chip-rm { background: none; border: none; cursor: pointer; color: var(--text3); font-size: .95rem; line-height:1; transition: color .15s; padding:0; }
+.option-chip-rm:hover { color: var(--red); }
+
+/* ── selectable chips (setup) ── */
+.sel-chip {
+  display: inline-flex; align-items: center;
+  border-radius: 100px; padding: 6px 14px; font-size: .82rem;
+  cursor: pointer; border: 1px solid var(--border2);
+  background: var(--surface2); color: var(--text);
+  transition: border-color .15s, background .15s, color .15s;
+  user-select: none;
+}
+.sel-chip.on { background: var(--accent-dim); border-color: var(--accent-border); color: var(--accent); font-weight: 500; }
+.sel-chip-grid { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 9px; }
+
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="logo" onclick="goHome()">preferi<span>resti?</span></div>
+  <div class="topbar-right">
+    <button class="btn btn-sm btn-ghost" id="btn-config" style="display:none" onclick="goConfig()">Modifica pool</button>
+    <button class="btn btn-sm btn-ghost" id="btn-home" style="display:none" onclick="goHome()">← Home</button>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- ══ HOME ══ -->
+  <div class="screen active" id="s-home">
+    <div class="page-title">preferi<span class="hl">resti?</span></div>
+    <p class="page-sub">Centro di controllo.</p>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.65rem">
+      <div class="section-label" style="margin:0">Campioni</div>
+      <button class="btn btn-sm" onclick="toggleQuickAdd()">+ Aggiungi</button>
+    </div>
+    <div id="quick-add-panel" style="display:none;margin-bottom:.85rem">
+      <div class="input-row">
+        <input type="text" id="inp-quick-option" placeholder="Nome campione..." maxlength="40" />
+        <button class="btn btn-accent" onclick="quickAddOption()">+</button>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:1.6rem">
+      <div class="option-chip-list" id="home-options"></div>
+      <div class="empty-hint" id="home-options-empty" style="display:none">Nessun campione ancora.</div>
+    </div>
+
+    <div class="section-label">Giocatori</div>
+    <div class="player-grid" id="home-players"></div>
+
+    <div class="nav">
+      <button class="btn btn-accent" onclick="goSetup()">Nuova partita →</button>
+      <button class="btn btn-ghost" onclick="goConfig()">Gestisci pool</button>
+    </div>
+  </div>
+
+  <!-- ══ CONFIG ══ -->
+  <div class="screen" id="s-config">
+    <div class="page-title">Configura i <span class="hl">pool</span></div>
+    <p class="page-sub">I dati vengono salvati automaticamente.</p>
+
+    <div class="tab-row">
+      <button class="tab-btn active" id="tab-p" onclick="switchTab('players')">Pool 1 — Giocatori</button>
+      <button class="tab-btn" id="tab-o" onclick="switchTab('options')">Pool 2 — Campioni</button>
+    </div>
+
+    <div id="panel-players">
+      <div class="card">
+        <div class="section-label">Aggiungi giocatore</div>
+        <div class="input-row">
+          <input type="text" id="inp-player" placeholder="Nome amico..." maxlength="40" />
+          <button class="btn btn-accent" onclick="addItem('players')">+</button>
+        </div>
+        <div class="tag-list" id="tags-players"></div>
+        <div class="empty-hint" id="eh-players" style="display:none">Nessun giocatore ancora.</div>
+      </div>
+    </div>
+
+    <div id="panel-options" style="display:none">
+      <div class="card">
+        <div class="section-label">Aggiungi campione</div>
+        <div class="input-row">
+          <input type="text" id="inp-option" placeholder="Nome campione..." maxlength="40" />
+          <button class="btn btn-accent" onclick="addItem('options')">+</button>
+        </div>
+        <div class="tag-list" id="tags-options"></div>
+        <div class="empty-hint" id="eh-options" style="display:none">Nessun campione ancora.</div>
+      </div>
+    </div>
+
+    <div class="nav">
+      <button class="btn btn-accent" onclick="goHome()">← Home</button>
+      <span class="err" id="config-err"></span>
+    </div>
+  </div>
+
+  <!-- ══ SETUP ══ -->
+  <div class="screen" id="s-setup">
+    <div class="page-title">Chi partecipa <span class="hl">oggi?</span></div>
+    <p class="page-sub">Seleziona i campioni da includere in questa partita.</p>
+
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <div class="section-label" style="margin:0">Giocatori</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn btn-sm btn-ghost" onclick="toggleAllPlayers(true)">Tutti</button>
+          <button class="btn btn-sm btn-ghost" onclick="toggleAllPlayers(false)">Nessuno</button>
+          <span style="font-size:.72rem;color:var(--text3)" id="su-pcount"></span>
+        </div>
+      </div>
+      <div class="sel-chip-grid" id="su-chip-players"></div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <div class="section-label" style="margin:0">Campioni</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn btn-sm btn-ghost" onclick="toggleAllChips(true)">Tutti</button>
+          <button class="btn btn-sm btn-ghost" onclick="toggleAllChips(false)">Nessuno</button>
+          <span style="font-size:.72rem;color:var(--text3)" id="su-ocount"></span>
+        </div>
+      </div>
+      <div class="sel-chip-grid" id="su-chip-options"></div>
+    </div>
+
+    <div class="card card-accent">
+      <div class="section-label" style="color:rgba(232,255,71,.45)">Riepilogo</div>
+      <div style="font-family:var(--font-d);font-weight:700;font-size:1.05rem;color:var(--accent)" id="su-summary"></div>
+    </div>
+    <div class="nav">
+      <button class="btn btn-accent" onclick="startGame()">Inizia!</button>
+      <button class="btn btn-ghost" onclick="goHome()">← Home</button>
+      <span class="err" id="su-err"></span>
+    </div>
+  </div>
+
+  <!-- ══ GAME ══ -->
+  <div class="screen" id="s-game">
+    <div class="prog-wrap">
+      <div class="prog-meta">
+        <span id="prog-lbl">Domanda 1</span>
+        <span id="prog-pct">0%</span>
+      </div>
+      <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+    </div>
+    <div class="player-badge" id="game-badge">—</div>
+    <div class="q-title">Preferiresti...</div>
+    <div class="choices">
+      <button class="choice-btn" id="ch-a" onclick="pick(0)">A</button>
+      <div class="vs-lbl">O</div>
+      <button class="choice-btn" id="ch-b" onclick="pick(1)">B</button>
+    </div>
+
+  </div>
+
+  <!-- ══ RESULTS ══ -->
+  <div class="screen" id="s-results">
+    <div class="page-title">Risultati <span class="hl">finali</span></div>
+    <p class="page-sub">Classifica personale salvata nello storico di ogni giocatore.</p>
+    <div class="player-tabs" id="res-tabs"></div>
+    <div class="card">
+      <div class="rank-list" id="res-ranking"></div>
+    </div>
+    <div class="nav">
+      <button class="btn btn-accent" onclick="goHome()">← Home</button>
+      <button class="btn btn-ghost" onclick="goSetup()">Nuova partita</button>
+    </div>
+  </div>
+
+  <!-- ══ PROFILE ══ -->
+  <div class="screen" id="s-profile">
+    <div class="profile-header">
+      <div style="display:flex;gap:14px;align-items:flex-start;flex:1">
+        <div class="profile-avatar" id="prof-avatar">?</div>
+        <div class="profile-info">
+          <div class="profile-name" id="prof-name">—</div>
+          <div class="profile-sub" id="prof-sub">0 partite giocate</div>
+          <div class="stat-row" id="prof-stats"></div>
+        </div>
+      </div>
+      <button class="btn btn-sm btn-danger" onclick="deletePlayerConfirm()">Elimina</button>
+    </div>
+
+    <div class="section-label">Classifica cumulativa</div>
+    <div class="card" id="prof-ranking-card">
+      <div id="prof-ranking"></div>
+    </div>
+    <div class="empty-hint" id="prof-empty" style="display:none;margin-top:-.5rem;margin-bottom:1rem">Nessuna partita ancora. Gioca la prima partita!</div>
+
+    <div class="nav">
+      <button class="btn btn-ghost" onclick="goHome()">← Home</button>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<script>
+// ═══════════════════════════════
+//  STORAGE
+// ═══════════════════════════════
+const DB = {
+  get players()  { return JSON.parse(localStorage.getItem('pref_players') || '[]'); },
+  get options()  { return JSON.parse(localStorage.getItem('pref_options') || '[]'); },
+  get elo()      { return JSON.parse(localStorage.getItem('pref_elo')     || '{}'); },
+  get sessions() { return JSON.parse(localStorage.getItem('pref_sessions')|| '{}'); },
+  get disabled() { return JSON.parse(localStorage.getItem('pref_disabled')|| '[]'); },
+  set players(v)  { localStorage.setItem('pref_players',  JSON.stringify(v)); },
+  set options(v)  { localStorage.setItem('pref_options',  JSON.stringify(v)); },
+  set elo(v)      { localStorage.setItem('pref_elo',      JSON.stringify(v)); },
+  set sessions(v) { localStorage.setItem('pref_sessions', JSON.stringify(v)); },
+  set disabled(v) { localStorage.setItem('pref_disabled', JSON.stringify(v)); },
+  toggleDisabled(name) {
+    const d = this.disabled;
+    const idx = d.indexOf(name);
+    if (idx === -1) d.push(name); else d.splice(idx, 1);
+    this.disabled = d;
+  },
+
+  // Returns current ELO map for a player, initialising missing options at 1000
+  getPlayerElo(player) {
+    const all = this.elo;
+    if (!all[player]) all[player] = {};
+    const map = all[player];
+    this.options.forEach(o => { if (map[o] === undefined) map[o] = 1000; });
+    return map;
+  },
+
+  // Apply ELO updates for one player given their list of {winner, loser} pairs
+  applyElo(player, matches) {
+    const K = 32;
+    const all = this.elo;
+    if (!all[player]) all[player] = {};
+    const map = all[player];
+    this.options.forEach(o => { if (map[o] === undefined) map[o] = 1000; });
+    matches.forEach(({ winner, loser }) => {
+      const Ra = map[winner], Rb = map[loser];
+      const Ea = 1 / (1 + Math.pow(10, (Rb - Ra) / 400));
+      map[winner] = Math.round(Ra + K * (1 - Ea));
+      map[loser]  = Math.round(Rb + K * (0 - (1 - Ea)));
+    });
+    all[player] = map;
+    this.elo = all;
+  },
+
+  // Save session count per player
+  addSession(player) {
+    const s = this.sessions;
+    s[player] = (s[player] || 0) + 1;
+    this.sessions = s;
+  },
+
+  deletePlayer(name) {
+    this.players = this.players.filter(p => p !== name);
+    const e = this.elo;      delete e[name]; this.elo = e;
+    const s = this.sessions; delete s[name]; this.sessions = s;
+  }
+};
+
+// ═══════════════════════════════
+//  APP STATE
+// ═══════════════════════════════
+let gs = {
+  rounds: [], currentRound: 0, pendingChoice: null,
+  matches: {}  // { playerName: [{winner, loser}] }
+};
+let currentProfilePlayer = null;
+
+// ═══════════════════════════════
+//  SCREENS
+// ═══════════════════════════════
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function setTopbar(mode) {
+  document.getElementById('btn-config').style.display = (mode !== 'config' && mode !== 'home') ? 'inline-block' : 'none';
+  document.getElementById('btn-home').style.display = (mode !== 'home') ? 'inline-block' : 'none';
+}
+
+// ═══════════════════════════════
+//  HOME
+// ═══════════════════════════════
+function goHome() {
+  renderHomePlayers();
+  renderHomeOptions();
+  show('s-home');
+  setTopbar('home');
+}
+
+function renderHomePlayers() {
+  const players = DB.players;
+  const sessions = DB.sessions;
+  const grid = document.getElementById('home-players');
+  grid.innerHTML = '';
+  if (players.length === 0) {
+    grid.innerHTML = '<div class="empty-hint">Nessun giocatore. Vai in "Gestisci pool".</div>';
+    return;
+  }
+  players.forEach(name => {
+    const count = sessions[name] || 0;
+    const card = document.createElement('div');
+    card.className = 'player-card';
+    const initials = name.trim().split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);
+    card.innerHTML = `
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:32px;height:32px;border-radius:50%;background:var(--accent-dim);border:1px solid var(--accent-border);display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-weight:800;font-size:.7rem;color:var(--accent)">${initials}</div>
+        <div class="player-card-name">${name}</div>
+      </div>
+      ${count > 0 ? `<div class="player-card-badge">${count} ${count === 1 ? 'partita' : 'partite'}</div>` : ''}
+      <div class="player-card-meta">${count > 0 ? 'Tocca per vedere la classifica' : 'Mai giocato'}</div>
+    `;
+    card.onclick = () => goProfile(name);
+    grid.appendChild(card);
+  });
+}
+
+function renderHomeOptions() {
+  const options = DB.options;
+  const disabled = DB.disabled;
+  const container = document.getElementById('home-options');
+  const empty = document.getElementById('home-options-empty');
+  container.innerHTML = '';
+  if (options.length === 0) { empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+  options.forEach(name => {
+    const on = !disabled.includes(name);
+    const chip = document.createElement('div');
+    chip.className = 'sel-chip' + (on ? ' on' : '');
+    chip.textContent = name;
+    chip.onclick = () => { DB.toggleDisabled(name); renderHomeOptions(); };
+    container.appendChild(chip);
+  });
+}
+
+function toggleQuickAdd() {
+  const panel = document.getElementById('quick-add-panel');
+  const visible = panel.style.display !== 'none';
+  panel.style.display = visible ? 'none' : 'block';
+  if (!visible) setTimeout(() => document.getElementById('inp-quick-option').focus(), 50);
+}
+
+function quickAddOption() {
+  const input = document.getElementById('inp-quick-option');
+  const val = input.value.trim();
+  if (!val) return;
+  const arr = DB.options;
+  if (!arr.includes(val)) { arr.push(val); DB.options = arr; }
+  input.value = '';
+  renderHomeOptions();
+}
+
+// ═══════════════════════════════
+//  CONFIG
+// ═══════════════════════════════
+let activeTab = 'players';
+
+function goConfig() {
+  renderAllTags();
+  show('s-config');
+  setTopbar('config');
+}
+
+function switchTab(tab) {
+  activeTab = tab;
+  document.getElementById('panel-players').style.display = tab === 'players' ? 'block' : 'none';
+  document.getElementById('panel-options').style.display = tab === 'options' ? 'block' : 'none';
+  document.getElementById('tab-p').classList.toggle('active', tab === 'players');
+  document.getElementById('tab-o').classList.toggle('active', tab === 'options');
+}
+
+function addItem(pool) {
+  const inputId = pool === 'players' ? 'inp-player' : 'inp-option';
+  const input = document.getElementById(inputId);
+  const val = input.value.trim();
+  if (!val) return;
+  const arr = DB[pool];
+  if (arr.includes(val)) { input.value = ''; return; }
+  arr.push(val);
+  DB[pool] = arr;
+  input.value = '';
+  renderAllTags();
+  document.getElementById('config-err').textContent = '';
+}
+
+function removeItem(pool, i) {
+  const arr = DB[pool];
+  arr.splice(i, 1);
+  DB[pool] = arr;
+  renderAllTags();
+}
+
+function renderAllTags() {
+  ['players', 'options'].forEach(pool => {
+    const arr = DB[pool];
+    const c = document.getElementById('tags-' + pool);
+    const eh = document.getElementById('eh-' + pool);
+    c.innerHTML = '';
+    arr.forEach((name, i) => {
+      const t = document.createElement('div'); t.className = 'tag';
+      t.innerHTML = `${name} <button class="tag-rm" onclick="removeItem('${pool}',${i})">×</button>`;
+      c.appendChild(t);
+    });
+    if (eh) eh.style.display = arr.length === 0 ? 'block' : 'none';
+  });
+}
+
+// ═══════════════════════════════
+//  SETUP
+// ═══════════════════════════════
+let setupSelectedOptions = new Set();
+let setupSelectedPlayers = new Set();
+
+function goSetup() {
+  const players = DB.players;
+  const options = DB.options;
+  if (players.length < 1) { goConfig(); switchTab('players'); document.getElementById('config-err').textContent = 'Aggiungi almeno 1 giocatore.'; return; }
+  if (options.length < 2) { goConfig(); switchTab('options'); document.getElementById('config-err').textContent = 'Aggiungi almeno 2 campioni.'; return; }
+
+  // Pre-select only enabled options (not disabled from home)
+  const disabled = DB.disabled;
+  setupSelectedOptions = new Set(options.filter(o => !disabled.includes(o)));
+
+  setupSelectedPlayers = new Set(players);
+  document.getElementById('su-err').textContent = '';
+
+  renderSetupPlayerChips();
+  renderSetupChips();
+  updateSetupSummary();
+  show('s-setup');
+  setTopbar('setup');
+}
+
+function renderSetupChips() {
+  const options = DB.options;
+  const grid = document.getElementById('su-chip-options');
+  grid.innerHTML = '';
+  options.forEach(name => {
+    const chip = document.createElement('div');
+    const on = setupSelectedOptions.has(name);
+    chip.className = 'sel-chip' + (on ? ' on' : '');
+    chip.textContent = name;
+    chip.onclick = () => {
+      if (setupSelectedOptions.has(name)) setupSelectedOptions.delete(name);
+      else setupSelectedOptions.add(name);
+      chip.classList.toggle('on', setupSelectedOptions.has(name));
+      updateSetupSummary();
+    };
+    grid.appendChild(chip);
+  });
+}
+
+function renderSetupPlayerChips() {
+  const players = DB.players;
+  const grid = document.getElementById('su-chip-players');
+  grid.innerHTML = '';
+  players.forEach(name => {
+    const chip = document.createElement('div');
+    const on = setupSelectedPlayers.has(name);
+    chip.className = 'sel-chip' + (on ? ' on' : '');
+    chip.textContent = name;
+    chip.onclick = () => {
+      if (setupSelectedPlayers.has(name)) setupSelectedPlayers.delete(name);
+      else setupSelectedPlayers.add(name);
+      chip.classList.toggle('on', setupSelectedPlayers.has(name));
+      updateSetupSummary();
+    };
+    grid.appendChild(chip);
+  });
+}
+
+function toggleAllPlayers(on) {
+  const players = DB.players;
+  if (on) players.forEach(p => setupSelectedPlayers.add(p));
+  else setupSelectedPlayers.clear();
+  renderSetupPlayerChips();
+  updateSetupSummary();
+}
+
+function toggleAllChips(on) {
+  const options = DB.options;
+  if (on) options.forEach(o => setupSelectedOptions.add(o));
+  else setupSelectedOptions.clear();
+  renderSetupChips();
+  updateSetupSummary();
+}
+
+function updateSetupSummary() {
+  const selOpts = setupSelectedOptions.size;
+  const selPl = setupSelectedPlayers.size;
+  const pairs = selOpts * (selOpts - 1) / 2;
+  document.getElementById('su-pcount').textContent = selPl + ' / ' + DB.players.length + ' selezionati';
+  document.getElementById('su-ocount').textContent = selOpts + ' / ' + DB.options.length + ' selezionati';
+  if (selPl < 1) {
+    document.getElementById('su-summary').textContent = 'Seleziona almeno 1 giocatore.';
+  } else if (selOpts < 2) {
+    document.getElementById('su-summary').textContent = 'Seleziona almeno 2 campioni.';
+  } else {
+    document.getElementById('su-summary').textContent = `${selPl} × ${pairs} sfide = ${selPl * pairs} domande totali`;
+  }
+}
+
+// ═══════════════════════════════
+//  GAME
+// ═══════════════════════════════
+function startGame() {
+  const players = [...setupSelectedPlayers];
+  const options = [...setupSelectedOptions];
+  if (players.length < 1) { document.getElementById('su-err').textContent = 'Seleziona almeno 1 giocatore.'; return; }
+  if (options.length < 2) { document.getElementById('su-err').textContent = 'Seleziona almeno 2 campioni.'; return; }
+  gs.matches = {};
+  players.forEach(p => gs.matches[p] = []);
+  gs.rounds = [];
+  players.forEach(player => {
+    for (let i = 0; i < options.length; i++)
+      for (let j = i + 1; j < options.length; j++)
+        gs.rounds.push({ player, pair: [options[i], options[j]] });
+  });
+  gs.currentRound = 0;
+  gs.pendingChoice = null;
+  renderRound();
+  show('s-game');
+  setTopbar('game');
+}
+
+function renderRound() {
+  const r = gs.rounds[gs.currentRound];
+  if (!r) { finishGame(); return; }
+  const total = gs.rounds.length;
+  const pct = Math.round((gs.currentRound / total) * 100);
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-pct').textContent = pct + '%';
+  document.getElementById('prog-lbl').textContent = `Domanda ${gs.currentRound + 1} di ${total}`;
+  document.getElementById('game-badge').textContent = r.player.toUpperCase();
+  document.getElementById('ch-a').textContent = r.pair[0];
+  document.getElementById('ch-b').textContent = r.pair[1];
+  document.getElementById('ch-a').classList.remove('selected');
+  document.getElementById('ch-b').classList.remove('selected');
+  gs.pendingChoice = null;
+}
+
+function pick(idx) {
+  const r = gs.rounds[gs.currentRound];
+  gs.matches[r.player].push({ winner: r.pair[idx], loser: r.pair[1 - idx] });
+  document.getElementById('ch-a').classList.toggle('selected', idx === 0);
+  document.getElementById('ch-b').classList.toggle('selected', idx === 1);
+  setTimeout(() => { gs.currentRound++; renderRound(); }, 300);
+}
+
+
+// ═══════════════════════════════
+//  FINISH → APPLY ELO
+// ═══════════════════════════════
+function finishGame() {
+  // Apply ELO updates per player and build display rankings
+  const sessionResults = {};
+  Object.keys(gs.matches).forEach(player => {
+    DB.applyElo(player, gs.matches[player]);
+    DB.addSession(player);
+    const eloMap = DB.getPlayerElo(player);
+    sessionResults[player] = Object.entries(eloMap)
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, elo]) => ({ name, elo }));
+  });
+
+  renderResultsScreen(sessionResults);
+  show('s-results');
+  setTopbar('results');
+}
+
+function renderResultsScreen(sessionResults) {
+  const players = Object.keys(sessionResults);
+  const tabs = document.getElementById('res-tabs');
+  tabs.innerHTML = '';
+  players.forEach((p, i) => {
+    const b = document.createElement('button');
+    b.className = 'ptab' + (i === 0 ? ' active' : '');
+    b.textContent = p;
+    b.onclick = () => { document.querySelectorAll('.ptab').forEach(t => t.classList.remove('active')); b.classList.add('active'); renderResRanking(sessionResults[p]); };
+    tabs.appendChild(b);
+  });
+  renderResRanking(sessionResults[players[0]]);
+}
+
+function renderResRanking(ranking) {
+  const maxElo = ranking[0]?.elo || 1000;
+  const minElo = ranking[ranking.length - 1]?.elo || 1000;
+  const range = maxElo - minElo || 1;
+  const list = document.getElementById('res-ranking');
+  list.innerHTML = '';
+  ranking.forEach(({ name, elo }, i) => {
+    const pct = Math.round(((elo - minElo) / range) * 80) + 20;
+    const item = document.createElement('div');
+    item.className = 'rank-item';
+    item.style.animationDelay = (i * .05) + 's';
+    item.innerHTML = `
+      <span class="rank-num ${i === 0 ? 'gold' : ''}">${i + 1}</span>
+      <span class="rank-name">${name}</span>
+      <div class="rank-bar-wrap"><div class="rank-bar" style="width:${pct}%"></div></div>
+      <span class="rank-score">${elo}</span>
+    `;
+    list.appendChild(item);
+  });
+}
+
+// ═══════════════════════════════
+//  PROFILE
+// ═══════════════════════════════
+function goProfile(name) {
+  currentProfilePlayer = name;
+  const sessionCount = DB.sessions[name] || 0;
+  const initials = name.trim().split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+
+  document.getElementById('prof-avatar').textContent = initials;
+  document.getElementById('prof-name').textContent = name;
+  document.getElementById('prof-sub').textContent = sessionCount + (sessionCount === 1 ? ' partita giocata' : ' partite giocate');
+
+  const eloMap = DB.getPlayerElo(name);
+  const sorted = Object.entries(eloMap).sort((a, b) => b[1] - a[1]);
+  const minElo = sorted[sorted.length - 1]?.[1] || 1000;
+  const maxElo = sorted[0]?.[1] || 1000;
+  const range = maxElo - minElo || 1;
+
+  // Stats
+  const statsEl = document.getElementById('prof-stats');
+  statsEl.innerHTML = '';
+  if (sorted.length > 0 && sessionCount > 0) {
+    statsEl.innerHTML = `
+      <div class="stat"><div class="stat-val">${sessionCount}</div><div class="stat-lbl">Partite</div></div>
+      <div class="stat"><div class="stat-val">${sorted[0][0]}</div><div class="stat-lbl">Preferita in assoluto</div></div>
+      <div class="stat"><div class="stat-val">${sorted[0][1]}</div><div class="stat-lbl">ELO</div></div>
+    `;
+  }
+
+  const rankEl = document.getElementById('prof-ranking');
+  const emptyEl = document.getElementById('prof-empty');
+  const cardEl = document.getElementById('prof-ranking-card');
+
+  if (sessionCount === 0 || sorted.length === 0) {
+    emptyEl.style.display = 'block';
+    cardEl.style.display = 'none';
+  } else {
+    emptyEl.style.display = 'none';
+    cardEl.style.display = 'block';
+    rankEl.innerHTML = '';
+    sorted.forEach(([optName, elo], i) => {
+      const pct = Math.round(((elo - minElo) / range) * 80) + 20;
+      const item = document.createElement('div');
+      item.className = 'rank-item';
+      item.style.animationDelay = (i * .04) + 's';
+      item.innerHTML = `
+        <span class="rank-num ${i === 0 ? 'gold' : ''}">${i + 1}</span>
+        <span class="rank-name">${optName}</span>
+        <div class="rank-bar-wrap"><div class="rank-bar" style="width:${pct}%"></div></div>
+        <span class="rank-score">${elo}</span>
+      `;
+      rankEl.appendChild(item);
+    });
+  }
+
+  show('s-profile');
+  setTopbar('profile');
+}
+
+function deletePlayerConfirm() {
+  if (!currentProfilePlayer) return;
+  if (!confirm(`Eliminare "${currentProfilePlayer}" e tutto il suo storico?`)) return;
+  DB.deletePlayer(currentProfilePlayer);
+  currentProfilePlayer = null;
+  goHome();
+}
+
+// ═══════════════════════════════
+//  UTILS
+// ═══════════════════════════════
+function fmtDate(iso) {
+  const d = new Date(iso);
+  return d.toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+// ═══════════════════════════════
+//  KEYBOARD
+// ═══════════════════════════════
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  if (document.activeElement.id === 'inp-player') addItem('players');
+  else if (document.activeElement.id === 'inp-option') addItem('options');
+  else if (document.activeElement.id === 'inp-quick-option') quickAddOption();
+});
+
+// ═══════════════════════════════
+//  BOOT
+// ═══════════════════════════════
+goHome();
+</script>
+</body>
+</html>
