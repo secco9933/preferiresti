@@ -1,0 +1,1533 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>4 Carte Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Cinzel+Decorative:wght@700&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a1a0e;
+    --felt: #0d2414;
+    --felt2: #102b18;
+    --border: #1e4a28;
+    --border2: #2a6338;
+    --gold: #d4a843;
+    --gold2: #f5cc6a;
+    --gold3: #ffe599;
+    --red: #c0392b;
+    --red2: #e74c3c;
+    --green: #27ae60;
+    --text: #f5ecd4;
+    --muted: #7a9e82;
+    --neon: #39ff9a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; touch-action: manipulation; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse at 50% 0%, #1a3d20 0%, transparent 55%),
+      repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(255,255,255,0.012) 40px, rgba(255,255,255,0.012) 41px);
+  }
+  h1, h2, h3 { font-family: 'Cinzel', serif; }
+
+  /* NAV */
+  nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 12px;
+    background: rgba(5,14,7,0.96);
+    border-bottom: 2px solid var(--gold);
+    position: sticky; top: 0; z-index: 100;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 2px 40px rgba(212,168,67,0.15);
+    gap: 6px;
+  }
+  .nav-logo { font-family: 'Cinzel Decorative', serif; font-size: 1rem; color: var(--gold2); letter-spacing: 1px; text-shadow: 0 0 20px rgba(212,168,67,0.5); flex-shrink: 0; }
+  .nav-logo span { display: none; }
+  .nav-tabs { display: flex; gap: 2px; flex: 1; justify-content: flex-end; }
+  .tab-btn {
+    background: none; border: 1px solid transparent; color: var(--muted);
+    padding: 7px 10px; border-radius: 4px; cursor: pointer;
+    font-family: 'Cinzel', serif; font-size: 0.6rem; letter-spacing: 1px; text-transform: uppercase;
+    transition: all 0.2s; white-space: nowrap;
+  }
+  .tab-btn.active { border-color: var(--gold); color: var(--gold); background: rgba(212,168,67,0.08); }
+  .tab-btn:hover:not(.active) { color: var(--text); border-color: var(--border2); }
+  #room-indicator {
+    position: fixed; bottom: 20px; right: 16px;
+    font-family: 'DM Mono', monospace; font-size: 0.65rem; color: var(--gold);
+    letter-spacing: 1px; display: none; white-space: nowrap;
+    background: rgba(5,14,7,0.95); border: 1px solid var(--gold);
+    border-radius: 20px; padding: 5px 14px; z-index: 99;
+    box-shadow: 0 0 16px rgba(212,168,67,0.2);
+  }
+
+  /* PAGES */
+  .page { display: none; padding: 36px 32px; max-width: 960px; margin: 0 auto; animation: fadeIn 0.35s; }
+  .page.active { display: block; }
+  @keyframes fadeIn { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
+
+  /* SETUP */
+  .setup-header { text-align: center; padding: 28px 0 44px; }
+  .setup-header h2 { font-size: 2.6rem; color: var(--gold2); margin-bottom: 10px; text-shadow: 0 0 30px rgba(212,168,67,0.4); letter-spacing: 3px; }
+  .setup-header p { color: var(--muted); font-family: 'DM Mono', monospace; font-size: 0.78rem; letter-spacing: 3px; text-transform: uppercase; }
+  .setup-layout { display: grid; grid-template-columns: 1fr 290px; gap: 20px; align-items: start; }
+  .setup-main { display: flex; flex-direction: column; gap: 20px; }
+  .setup-sidebar { position: sticky; top: 80px; }
+  @media (max-width: 680px) { .setup-layout { grid-template-columns: 1fr; } .setup-sidebar { position: static; } }
+  .setup-card { background: var(--felt); border: 1px solid var(--border2); border-radius: 12px; padding: 28px; margin-bottom: 0; box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.4); position: relative; overflow: hidden; }
+  .setup-card::before { content:''; position:absolute; inset:0; background: repeating-linear-gradient(0deg, transparent, transparent 20px, rgba(255,255,255,0.008) 20px, rgba(255,255,255,0.008) 21px); pointer-events:none; }
+  .setup-card h3 { color: var(--gold); font-family: 'Cinzel', serif; font-size: 0.82rem; margin-bottom: 20px; letter-spacing: 3px; text-transform: uppercase; border-bottom: 1px solid var(--border2); padding-bottom: 12px; }
+
+  /* ROSTER */
+  .roster-grid { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+  .roster-chip { background: rgba(255,255,255,0.04); border: 1px solid var(--border2); border-radius: 8px; padding: 12px 16px; cursor: pointer; transition: all 0.18s; display: flex; align-items: center; gap: 12px; user-select: none; }
+  .roster-chip:hover { border-color: var(--gold); background: rgba(212,168,67,0.06); }
+  .roster-chip.selected { border-color: var(--gold); background: rgba(212,168,67,0.1); box-shadow: 0 0 12px rgba(212,168,67,0.15); }
+  .roster-chip .chip-name { font-size: 0.95rem; font-weight: 500; flex: 1; }
+  .roster-chip .chip-check { width: 20px; height: 20px; border-radius: 50%; border: 1px solid var(--border2); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; transition: all 0.18s; }
+  .roster-chip.selected .chip-check { background: var(--gold); border-color: var(--gold); color: #0a1a0e; }
+  .roster-chip .chip-del { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.85rem; padding: 4px 6px; border-radius: 4px; transition: color 0.15s; }
+  .roster-chip .chip-del:hover { color: var(--red2); }
+  .selected-count { font-family: 'DM Mono', monospace; font-size: 0.72rem; color: var(--muted); margin-bottom: 12px; letter-spacing: 1px; }
+  .add-player-inline { display: flex; gap: 10px; margin-top: 4px; }
+  .add-player-inline input { flex: 1; background: rgba(0,0,0,0.3); border: 1px solid var(--border2); color: var(--text); padding: 10px 14px; border-radius: 6px; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; outline: none; transition: border-color 0.2s; }
+  .add-player-inline input:focus { border-color: var(--gold); }
+  .add-player-inline input::placeholder { color: var(--muted); }
+  .btn-add-small { background: rgba(212,168,67,0.1); border: 1px solid var(--gold); color: var(--gold); padding: 10px 16px; border-radius: 6px; cursor: pointer; font-family: 'Cinzel', serif; font-size: 0.8rem; letter-spacing: 1px; transition: all 0.2s; }
+  .btn-add-small:hover { background: rgba(212,168,67,0.2); }
+
+  /* PRIZES */
+  .prize-preview { background: rgba(0,0,0,0.25); border-radius: 8px; padding: 16px 20px; font-family: 'DM Mono', monospace; font-size: 0.82rem; }
+  .prize-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .prize-row:last-child { border-bottom: none; }
+  .prize-row .pos { color: var(--muted); }
+  .prize-row .amount.positive { color: var(--neon); font-weight: 600; }
+  .prize-row .amount.negative { color: var(--red2); font-weight: 600; }
+  .prize-row .amount.neutral { color: var(--muted); }
+
+  /* BUTTONS */
+  .btn-primary { background: linear-gradient(135deg, #d4a843 0%, #c09030 50%, #d4a843 100%); color: #0a1a0e; border: none; padding: 15px 32px; border-radius: 6px; cursor: pointer; font-family: 'Cinzel', serif; font-size: 1rem; font-weight: 700; width: 100%; transition: all 0.2s; margin-top: 8px; letter-spacing: 2px; text-transform: uppercase; box-shadow: 0 4px 20px rgba(212,168,67,0.3), inset 0 1px 0 rgba(255,255,255,0.3); }
+  .btn-primary:hover { background: linear-gradient(135deg, #f5cc6a 0%, #d4a843 50%, #f5cc6a 100%); transform: translateY(-1px); box-shadow: 0 6px 28px rgba(212,168,67,0.45); }
+  .btn-primary:disabled { opacity: 0.35; cursor: not-allowed; transform: none; box-shadow: none; }
+  .btn-confirm { background: rgba(212,168,67,0.1); border: 1px solid var(--gold); color: var(--gold); padding: 13px 24px; border-radius: 6px; cursor: pointer; font-family: 'Cinzel', serif; font-size: 0.8rem; letter-spacing: 2px; text-transform: uppercase; transition: all 0.2s; box-shadow: 0 0 12px rgba(212,168,67,0.1); }
+  .btn-confirm:hover { background: rgba(212,168,67,0.18); box-shadow: 0 0 20px rgba(212,168,67,0.25); }
+  .btn-secondary { background: none; border: 1px solid var(--border2); color: var(--muted); padding: 12px 18px; border-radius: 6px; cursor: pointer; font-family: 'Cinzel', serif; font-size: 0.72rem; letter-spacing: 2px; text-transform: uppercase; transition: all 0.2s; }
+  .btn-secondary:hover { border-color: var(--text); color: var(--text); }
+  .btn-danger { background: none; border: 1px solid rgba(192,57,43,0.5); color: var(--red2); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-family: 'Cinzel', serif; font-size: 0.68rem; letter-spacing: 2px; text-transform: uppercase; transition: all 0.2s; }
+  .btn-danger:hover { background: rgba(192,57,43,0.1); border-color: var(--red2); box-shadow: 0 0 10px rgba(192,57,43,0.2); }
+  .btn-back-tossico { background: none; border: none; color: var(--muted); cursor: pointer; font-family: 'DM Mono', monospace; font-size: 0.68rem; letter-spacing: 0.5px; padding: 4px 0; text-decoration: underline; text-underline-offset: 3px; transition: color 0.15s; white-space: nowrap; }
+  .btn-back-tossico:hover { color: var(--text); }
+
+  /* GAME PAGE */
+  .game-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 28px; gap: 12px; }
+  .game-header h2 { font-size: 1.7rem; color: var(--gold2); letter-spacing: 2px; text-shadow: 0 0 20px rgba(212,168,67,0.3); }
+  .round-badge { background: rgba(0,0,0,0.4); border: 1px solid var(--gold); border-radius: 4px; padding: 5px 14px; font-family: 'Cinzel', serif; font-size: 0.72rem; color: var(--gold); letter-spacing: 2px; text-transform: uppercase; box-shadow: 0 0 10px rgba(212,168,67,0.2); }
+
+  /* SCOREBOARD */
+  .scoreboard { display: grid; gap: 8px; margin-bottom: 24px; }
+  .player-score-row { background: var(--felt2); border: 1px solid var(--border2); border-radius: 8px; display: grid; grid-template-columns: 36px 1fr auto auto; align-items: center; gap: 14px; padding: 14px 20px; transition: all 0.2s; box-shadow: inset 0 1px 0 rgba(255,255,255,0.04); }
+  .player-score-row.danger { border-color: rgba(231,76,60,0.6); background: rgba(192,57,43,0.08); box-shadow: inset 0 0 20px rgba(192,57,43,0.1), 0 0 12px rgba(192,57,43,0.15); animation: dangerPulse 2s ease-in-out infinite; }
+  @keyframes dangerPulse { 0%,100% { border-color: rgba(231,76,60,0.4); } 50% { border-color: rgba(231,76,60,0.9); } }
+  .rank-num { font-family: 'Cinzel', serif; font-size: 0.85rem; color: var(--gold); text-align: center; font-weight: 700; }
+  .player-name-score { display: flex; flex-direction: column; }
+  .player-name-score .pname { font-size: 1rem; font-weight: 600; letter-spacing: 0.5px; }
+  .player-name-score .pscore { font-family: 'DM Mono', monospace; font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+  .score-bar-wrap { width: 100px; }
+  .score-bar { height: 3px; background: rgba(255,255,255,0.08); border-radius: 2px; overflow: hidden; }
+  .score-bar-fill { height: 100%; border-radius: 2px; transition: width 0.5s ease; }
+  .total-score { font-family: 'Cinzel', serif; font-size: 1.2rem; font-weight: 700; min-width: 44px; text-align: right; }
+  .total-score.high { color: var(--red2); text-shadow: 0 0 10px rgba(231,76,60,0.5); }
+
+  /* ROUND IN PROGRESS */
+  .round-in-progress { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 30px 20px; margin-bottom: 20px; background: var(--felt); border: 1px solid var(--border2); border-radius: 10px; position: relative; overflow: hidden; }
+  .round-in-progress::before { content:''; position:absolute; inset:0; background: radial-gradient(ellipse at 50% 100%, rgba(57,255,154,0.04) 0%, transparent 70%); pointer-events:none; }
+  .rip-cards { display: flex; gap: 12px; align-items: flex-end; height: 60px; }
+  .rip-card { width: 40px; height: 56px; border-radius: 6px; background: #f5ecd4; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; font-weight: 900; animation: cardBounce 1.4s ease-in-out infinite; box-shadow: 0 6px 16px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.8); }
+  .rip-card.c1 { color: #1a1a1a; animation-delay: 0s; }
+  .rip-card.c2 { color: #c0392b; animation-delay: 0.18s; }
+  .rip-card.c3 { color: #c0392b; animation-delay: 0.36s; }
+  .rip-card.c4 { color: #1a1a1a; animation-delay: 0.54s; }
+  @keyframes cardBounce { 0%,100% { transform: translateY(0) rotate(-4deg); } 35% { transform: translateY(-16px) rotate(4deg); } 65% { transform: translateY(-6px) rotate(-2deg); } }
+  .rip-label { font-family: 'Cinzel', serif; font-size: 0.7rem; color: var(--neon); letter-spacing: 4px; text-transform: uppercase; animation: ripPulse 2s ease-in-out infinite; text-shadow: 0 0 10px rgba(57,255,154,0.5); }
+  @keyframes ripPulse { 0%,100% { opacity: 0.4; } 50% { opacity: 1; } }
+
+  /* CLOSER CHIPS */
+  .closer-chip { background: rgba(255,255,255,0.04); border: 1px solid var(--border2); border-radius: 8px; padding: 16px 20px; cursor: pointer; transition: all 0.18s; display: flex; align-items: center; gap: 12px; user-select: none; }
+  .closer-chip:hover { border-color: var(--gold); background: rgba(212,168,67,0.08); transform: translateX(4px); box-shadow: 0 0 16px rgba(212,168,67,0.15); }
+  .closer-chip .chip-name { font-size: 1rem; font-weight: 600; flex: 1; letter-spacing: 0.5px; }
+  .closer-chip .chip-check { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; color: var(--muted); transition: all 0.18s; }
+
+  /* SCORE ENTRY */
+  .score-entry-card { background: var(--felt); border: 1px solid var(--border2); border-radius: 14px; padding: 36px 28px; text-align: center; margin-top: 8px; box-shadow: inset 0 0 40px rgba(0,0,0,0.3); }
+  .score-entry-label { font-family: 'Cinzel', serif; font-size: 0.72rem; color: var(--gold); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 20px; }
+  #score-big-input { width: 100%; background: rgba(0,0,0,0.4); border: 2px solid var(--border2); color: var(--gold2); padding: 20px; border-radius: 10px; font-family: 'Cinzel', serif; font-size: 3.2rem; font-weight: 700; text-align: center; outline: none; transition: border-color 0.2s; -moz-appearance: textfield; box-shadow: inset 0 2px 10px rgba(0,0,0,0.5); letter-spacing: 4px; }
+  #score-big-input::-webkit-inner-spin-button, #score-big-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+  #score-big-input:focus { border-color: var(--gold); box-shadow: inset 0 2px 10px rgba(0,0,0,0.5), 0 0 16px rgba(212,168,67,0.2); }
+  .score-entry-sub { font-family: 'DM Mono', monospace; font-size: 0.82rem; color: var(--muted); margin-top: 14px; }
+  .score-entry-sub .will-be { color: var(--gold2); font-weight: 500; }
+  .score-entry-sub .will-be.danger { color: var(--red2); text-shadow: 0 0 8px rgba(231,76,60,0.4); }
+
+  /* QUICK BTNS */
+  .quick-btns { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 18px; }
+  .quick-btn { background: rgba(0,0,0,0.3); border: 1px solid var(--border2); color: var(--text); padding: 14px 8px; border-radius: 8px; cursor: pointer; font-family: 'Cinzel', serif; font-size: 0.88rem; font-weight: 700; transition: all 0.15s; text-align: center; letter-spacing: 1px; }
+  .quick-btn:active { transform: scale(0.93); }
+  .quick-btn.pos { color: var(--neon); border-color: rgba(57,255,154,0.25); }
+  .quick-btn.pos:hover { background: rgba(57,255,154,0.08); border-color: var(--neon); box-shadow: 0 0 10px rgba(57,255,154,0.15); }
+  .quick-btn.neg { color: var(--red2); border-color: rgba(231,76,60,0.25); }
+  .quick-btn.neg:hover { background: rgba(231,76,60,0.08); border-color: var(--red2); box-shadow: 0 0 10px rgba(231,76,60,0.15); }
+
+  /* MODAL */
+  .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 200; align-items: center; justify-content: center; backdrop-filter: blur(6px); }
+  .overlay.show { display: flex; }
+  .modal { background: var(--felt); border: 1px solid var(--gold); border-radius: 16px; padding: 44px 40px; max-width: 500px; width: 92%; animation: popIn 0.3s; box-shadow: 0 0 60px rgba(212,168,67,0.2), 0 20px 60px rgba(0,0,0,0.8); position: relative; overflow: hidden; }
+  .modal::before { content:''; position:absolute; inset:0; background: repeating-linear-gradient(0deg, transparent, transparent 20px, rgba(255,255,255,0.008) 20px, rgba(255,255,255,0.008) 21px); pointer-events:none; }
+  @keyframes popIn { from { transform: scale(0.88); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .modal h2 { font-size: 2rem; color: var(--gold2); text-align: center; margin-bottom: 6px; letter-spacing: 3px; text-shadow: 0 0 20px rgba(212,168,67,0.4); }
+  .modal .subtitle { text-align: center; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 0.75rem; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 28px; }
+  .final-row { display: flex; align-items: center; gap: 14px; padding: 13px 16px; border-radius: 8px; margin-bottom: 8px; background: rgba(0,0,0,0.3); border: 1px solid var(--border2); }
+  .final-row.loser { border-left: 3px solid var(--red2); }
+  .final-row .medal { font-size: 1.4rem; width: 32px; text-align: center; }
+  .final-row .fname { flex: 1; font-size: 0.95rem; font-weight: 500; }
+  .final-row .fmoney { font-family: 'Cinzel', serif; font-weight: 700; font-size: 1rem; }
+  .final-row .fmoney.pos { color: var(--neon); text-shadow: 0 0 10px rgba(57,255,154,0.3); }
+  .final-row .fmoney.neg { color: var(--red2); }
+  .final-row .fmoney.zero { color: var(--muted); }
+  .modal-actions { display: flex; gap: 10px; margin-top: 24px; }
+
+  /* TIEBREAK */
+  .tb-pick-btn { display: flex; align-items: center; gap: 14px; background: rgba(0,0,0,0.3); border: 1px solid var(--border2); color: var(--text); padding: 18px 20px; border-radius: 8px; cursor: pointer; width: 100%; font-family: 'DM Sans', sans-serif; font-size: 1rem; font-weight: 500; transition: all 0.18s; text-align: left; margin-bottom: 8px; }
+  .tb-pick-btn:hover { border-color: var(--gold); background: rgba(212,168,67,0.08); box-shadow: 0 0 16px rgba(212,168,67,0.15); transform: translateX(4px); }
+  .tb-suit { font-size: 1.5rem; }
+  .tb-arrow { margin-left: auto; font-family: 'Cinzel', serif; font-size: 0.68rem; color: var(--gold); letter-spacing: 2px; }
+
+  /* HISTORY */
+  .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
+  .history-header h2 { font-size: 1.8rem; color: var(--gold2); letter-spacing: 3px; text-shadow: 0 0 20px rgba(212,168,67,0.3); }
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 32px; }
+  .stat-card { background: var(--felt2); border: 1px solid var(--border2); border-radius: 10px; padding: 20px 22px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.04); }
+  .stat-card .slabel { font-family: 'Cinzel', serif; font-size: 0.65rem; color: var(--muted); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 10px; }
+  .stat-card .svalue { font-family: 'Cinzel', serif; font-size: 1.8rem; color: var(--gold2); text-shadow: 0 0 16px rgba(212,168,67,0.3); }
+  .stat-card .sname { font-size: 0.82rem; color: var(--muted); margin-top: 4px; }
+
+  /* STATS TABLE */
+  .leaderboard { margin-bottom: 36px; }
+  .leaderboard h3 { font-family: 'Cinzel', serif; font-size: 0.72rem; color: var(--gold); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 16px; border-bottom: 1px solid var(--border2); padding-bottom: 10px; }
+  .stats-table { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .stats-table-inner { min-width: 780px; }
+  .st-header, .st-row {
+    display: grid;
+    grid-template-columns: 100px 56px 56px 64px 56px 64px 72px 72px 62px;
+    align-items: center;
+    font-family: 'DM Mono', monospace; font-size: 0.68rem;
+  }
+  .st-header { color: var(--muted); letter-spacing: 0.5px; text-transform: uppercase; padding: 6px 6px; margin-bottom: 4px; line-height: 1.2; }
+  .st-header span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .st-header span:not(:first-child) { text-align: right; padding-right: 4px; }
+  .st-sort { cursor: pointer; user-select: none; transition: color 0.15s; display: flex; align-items: center; justify-content: flex-end; gap: 1px; padding-right: 4px; white-space: nowrap; }
+  .st-sort:hover { color: var(--gold); }
+  .sort-icon { color: var(--gold); font-size: 0.6rem; flex-shrink: 0; }
+  .st-row { background: var(--felt2); border: 1px solid var(--border); border-radius: 6px; padding: 10px 6px; margin-bottom: 5px; transition: all 0.15s; }
+  .st-row:hover { border-color: var(--gold); background: rgba(212,168,67,0.04); }
+  .st-name { display: flex; align-items: center; gap: 5px; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 500; overflow: hidden; }
+  .st-name span:last-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .st-medal { font-size: 0.85rem; flex-shrink: 0; }
+  .st-val { text-align: right; color: var(--muted); padding-right: 4px; white-space: nowrap; }
+  .st-val.pos { color: var(--neon); }
+  .st-val.neg { color: var(--red2); }
+
+  /* GAME CARDS */
+  .past-games h3 { font-family: 'Cinzel', serif; font-size: 0.72rem; color: var(--gold); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 14px; border-bottom: 1px solid var(--border2); padding-bottom: 10px; }
+  .game-card { background: var(--felt2); border: 1px solid var(--border2); border-radius: 10px; padding: 18px 22px; margin-bottom: 10px; cursor: pointer; transition: all 0.2s; }
+  .game-card:hover { border-color: var(--gold); box-shadow: 0 0 16px rgba(212,168,67,0.1); }
+  .game-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .game-card-header .gdate { font-family: 'DM Mono', monospace; font-size: 0.72rem; color: var(--muted); }
+  .game-card-header .gwinner { color: var(--gold2); font-size: 0.92rem; font-family: 'Cinzel', serif; letter-spacing: 1px; }
+  .game-players { display: flex; flex-wrap: wrap; gap: 8px; }
+  .game-player-chip { background: rgba(0,0,0,0.3); border: 1px solid var(--border2); border-radius: 20px; padding: 4px 12px; font-family: 'DM Mono', monospace; font-size: 0.72rem; display: flex; align-items: center; gap: 6px; }
+  .game-player-chip .chip-money.pos { color: var(--neon); }
+  .game-player-chip .chip-money.neg { color: var(--red2); }
+
+  .empty-state { text-align: center; padding: 70px 20px; color: var(--muted); }
+  .empty-state .icon { font-size: 3rem; margin-bottom: 14px; opacity: 0.5; }
+  .empty-state p { font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 3px; text-transform: uppercase; }
+
+  /* RESPONSIVE */
+  @media (max-width: 600px) {
+    nav { padding: 12px 16px; }
+    .nav-logo { font-size: 1rem; }
+    .tab-btn { padding: 6px 12px; font-size: 0.65rem; }
+    .page { padding: 20px 16px; }
+    .score-bar-wrap { display: none; }
+    .player-score-row { grid-template-columns: 28px 1fr auto; }
+  }
+
+  .divider { border: none; border-top: 1px solid var(--border2); margin: 24px 0; }
+
+  /* SESSION PAGE */
+  .session-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(57,255,154,0.08); border: 1px solid rgba(57,255,154,0.3); border-radius: 20px; padding: 4px 14px; font-family: 'DM Mono', monospace; font-size: 0.72rem; color: var(--neon); letter-spacing: 1px; margin-bottom: 20px; }
+  .session-badge::before { content: '●'; font-size: 0.5rem; animation: ripPulse 1.5s ease-in-out infinite; }
+  .session-saldo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; margin-bottom: 28px; }
+  .session-saldo-card { background: var(--felt2); border: 1px solid var(--border2); border-radius: 10px; padding: 16px 18px; text-align: center; }
+  .session-saldo-card .ss-name { font-size: 0.85rem; font-weight: 500; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .session-saldo-card .ss-amount { font-family: 'Cinzel', serif; font-size: 1.4rem; font-weight: 700; }
+  .session-saldo-card .ss-amount.pos { color: var(--neon); text-shadow: 0 0 10px rgba(57,255,154,0.3); }
+  .session-saldo-card .ss-amount.neg { color: var(--red2); }
+  .session-saldo-card .ss-amount.zero { color: var(--muted); }
+  .session-games-list h3 { font-family: 'Cinzel', serif; font-size: 0.72rem; color: var(--gold); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 14px; border-bottom: 1px solid var(--border2); padding-bottom: 10px; }
+  .session-game-row { background: var(--felt2); border: 1px solid var(--border2); border-radius: 8px; padding: 14px 18px; margin-bottom: 8px; }
+  .session-game-row .sgr-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .session-game-row .sgr-num { font-family: 'Cinzel', serif; font-size: 0.78rem; color: var(--gold); letter-spacing: 2px; }
+  .session-game-row .sgr-rounds { font-family: 'DM Mono', monospace; font-size: 0.7rem; color: var(--muted); }
+  .session-no-active { text-align: center; padding: 60px 20px; }
+  .session-no-active .icon { font-size: 3rem; margin-bottom: 14px; opacity: 0.4; }
+  .session-no-active p { font-family: 'Cinzel', serif; font-size: 0.78rem; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 20px; }
+  .notification { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--felt); border: 1px solid var(--gold); border-radius: 6px; padding: 12px 28px; font-family: 'Cinzel', serif; font-size: 0.78rem; color: var(--gold); z-index: 300; animation: slideUp 0.3s; pointer-events: none; white-space: nowrap; letter-spacing: 2px; box-shadow: 0 0 20px rgba(212,168,67,0.3); }
+  @keyframes slideUp { from { transform: translateX(-50%) translateY(20px); opacity:0; } to { transform: translateX(-50%) translateY(0); opacity:1; } }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">
+    ♠ 4 Carte
+    <span>tracker</span>
+  </div>
+  <div class="nav-tabs">
+    <button class="tab-btn active" onclick="showPage('setup')">Nuova</button>
+    <button class="tab-btn" id="tab-game" onclick="showPage('game')">Partita</button>
+    <button class="tab-btn" onclick="showPage('session')">Sessione</button>
+    <button class="tab-btn" onclick="showPage('history')">Storico</button>
+  </div>
+</nav>
+<div id="room-indicator">● <span id="room-indicator-code"></span></div>
+
+<!-- SETUP PAGE NEW -->
+<div class="page active" id="page-setup">
+  <div class="setup-header">
+    <h2>Nuova Partita</h2>
+    <p>Seleziona chi gioca stasera</p>
+  </div>
+  <div class="setup-layout">
+    <!-- LEFT: prizes + start -->
+    <div class="setup-main">
+      <div class="setup-card">
+        <h3>Premi in palio</h3>
+        <div id="prize-preview">
+          <div style="color:var(--muted);font-family:'DM Mono',monospace;font-size:0.8rem;">Seleziona almeno 2 giocatori</div>
+        </div>
+      </div>
+      <button class="btn-primary" id="btn-start" onclick="startGame()" disabled>Inizia la Partita</button>
+    </div>
+    <!-- RIGHT: roster -->
+    <div class="setup-sidebar">
+      <div class="setup-card" style="height:100%;">
+        <h3>Giocatori</h3>
+        <div class="selected-count" id="selected-count">Nessun giocatore selezionato</div>
+        <div class="roster-grid" id="roster-grid"></div>
+        <div class="add-player-inline">
+          <input type="text" id="new-player-input" placeholder="Nuovo giocatore..." onkeydown="if(event.key==='Enter') addNewPlayer()">
+          <button class="btn-add-small" onclick="addNewPlayer()">+</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GAME PAGE -->
+<div class="page" id="page-game">
+  <!-- VIEW: scoreboard -->
+  <div id="view-scoreboard">
+    <div class="game-header">
+      <div>
+        <h2>Partita in corso</h2>
+        <div class="round-badge" id="round-label" style="display:inline-block;margin-top:6px;">Round 1</div>
+      </div>
+      <button class="btn-danger" onclick="confirmAbandon()">Abbandona</button>
+    </div>
+    <div class="scoreboard" id="scoreboard"></div>
+
+    <!-- ROUND IN CORSO ANIMATION -->
+    <div class="round-in-progress">
+      <div class="rip-cards">
+        <div class="rip-card c1">♠</div>
+        <div class="rip-card c2">♥</div>
+        <div class="rip-card c3">♦</div>
+        <div class="rip-card c4">♣</div>
+      </div>
+      <div class="rip-label">Round in corso...</div>
+    </div>
+
+    <button class="btn-primary" onclick="openRoundStep1()">Fine Round</button>
+  </div>
+
+  <!-- VIEW: step 1 — chi ha chiuso -->
+  <div id="view-closer" style="display:none;">
+    <div class="game-header">
+      <div>
+        <h2>Chi ha chiuso?</h2>
+        <div class="round-badge" id="round-label-2" style="display:inline-block;margin-top:6px;">Round 1</div>
+      </div>
+    </div>
+    <p style="color:var(--muted);font-family:'DM Mono',monospace;font-size:0.78rem;letter-spacing:1px;margin-bottom:20px;">TOCCA IL NOME DEL GIOCATORE CHE HA CHIUSO</p>
+    <div class="roster-grid" id="closer-grid"></div>
+    <div style="margin-top:20px;">
+      <button class="btn-secondary" onclick="skipCloser()">Nessuno / Salta</button>
+    </div>
+  </div>
+
+  <!-- VIEW: step 2 — inserimento punteggi uno per uno -->
+  <div id="view-scores" style="display:none;">
+    <div class="game-header">
+      <div>
+        <h2 id="score-player-name">Giocatore</h2>
+        <div class="round-badge" id="round-label-3" style="display:inline-block;margin-top:6px;">Round 1</div>
+      </div>
+      <div style="font-family:'DM Mono',monospace;font-size:0.78rem;color:var(--muted);" id="score-progress">1 / 4</div>
+    </div>
+    <div class="score-entry-card">
+      <div class="score-entry-label">Punti questo round</div>
+      <input type="number" id="score-big-input" min="0" inputmode="numeric" placeholder="0">
+      <div class="score-entry-sub" id="score-entry-sub">Totale attuale: 0</div>
+      <div class="quick-btns">
+        <button class="quick-btn pos" onclick="adjustScore(+1)">+1</button>
+        <button class="quick-btn pos" onclick="adjustScore(+5)">+5</button>
+        <button class="quick-btn pos" onclick="adjustScore(+10)">+10</button>
+        <button class="quick-btn neg" onclick="adjustScore(-1)">−1</button>
+        <button class="quick-btn neg" onclick="adjustScore(-5)">−5</button>
+        <button class="quick-btn neg" onclick="adjustScore(-10)">−10</button>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:20px;">
+      <button class="btn-back-tossico" onclick="backToCloser()" id="btn-score-prev">← indietro, sono un tossico</button>
+      <button class="btn-confirm" style="flex:1" id="btn-score-next" onclick="scoreNext()">Avanti →</button>
+    </div>
+  </div>
+</div>
+
+<!-- SESSION PAGE -->
+<div class="page" id="page-session">
+  <div class="history-header">
+    <h2 id="session-title">Sessione</h2>
+    <button class="btn-danger" onclick="confirmEndSession()" id="btn-end-session" style="display:none;">Fine Sessione</button>
+  </div>
+  <div id="session-content"></div>
+</div>
+
+<!-- HISTORY PAGE -->
+<div class="page" id="page-history">
+  <div class="history-header">
+    <h2>Storico</h2>
+    <button class="btn-danger" onclick="confirmClearHistory()" id="btn-clear-history" style="display:none;">Cancella tutto</button>
+  </div>
+  <div id="history-content"></div>
+</div>
+
+<!-- LIVE SPECTATOR OVERLAY -->
+<div class="overlay" id="overlay-spectator" style="z-index:150;flex-direction:column;padding:0;">
+  <div style="width:100%;max-width:540px;padding:28px 20px;">
+    <div style="text-align:center;margin-bottom:24px;">
+      <div style="font-family:'Cinzel Decorative',serif;font-size:1.1rem;color:var(--gold2);text-shadow:0 0 20px rgba(212,168,67,0.4);">♠ 4 Carte</div>
+      <div class="session-badge" style="display:inline-flex;margin-top:10px;">● Partita in corso — Round <span id="spec-round">1</span></div>
+    </div>
+    <div id="spec-scoreboard" style="display:grid;gap:10px;margin-bottom:28px;"></div>
+    <div style="text-align:center;font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted);letter-spacing:1px;">
+      IN ATTESA DELLA FINE DELLA PARTITA...
+    </div>
+    <div style="margin-top:16px;text-align:center;">
+      <button class="btn-back-tossico" onclick="forceEndLiveGame()">⚠ La partita è bloccata? Forza la chiusura</button>
+    </div>
+  </div>
+</div>
+
+<!-- ROOM LOGIN OVERLAY -->
+<div class="overlay show" id="overlay-room" style="z-index:500;">
+  <div class="modal" style="max-width:420px;text-align:center;">
+    <div style="font-size:2.5rem;margin-bottom:8px;">♠</div>
+    <h2 style="margin-bottom:6px;">4 Carte</h2>
+    <div class="subtitle" style="margin-bottom:28px;">Inserisci il codice stanza per entrare</div>
+    <input type="text" id="room-code-input" placeholder="Codice stanza (es. AMICI)" 
+      style="width:100%;background:rgba(0,0,0,0.4);border:2px solid var(--border2);color:var(--text);
+      padding:14px 16px;border-radius:8px;font-family:'Cinzel',serif;font-size:1.1rem;
+      text-align:center;outline:none;letter-spacing:3px;text-transform:uppercase;margin-bottom:12px;"
+      onkeydown="if(event.key==='Enter') joinRoom()">
+    <div id="room-error" style="font-family:'DM Mono',monospace;font-size:0.75rem;color:var(--red2);min-height:20px;margin-bottom:12px;"></div>
+    <button class="btn-primary" onclick="joinRoom()" id="btn-join-room">Entra nella Stanza</button>
+    <div style="margin-top:16px;font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted);">
+      Nessuna stanza? Il codice la crea automaticamente.
+    </div>
+  </div>
+</div>
+
+<!-- CUSTOM CONFIRM MODAL -->
+<div class="overlay" id="overlay-confirm">
+  <div class="modal" style="max-width:380px;padding:32px 28px;">
+    <p id="confirm-message" style="text-align:center;font-family:'DM Sans',sans-serif;font-size:1rem;line-height:1.5;margin-bottom:24px;"></p>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="confirmResolve(false)">Annulla</button>
+      <button class="btn-primary" style="flex:1;margin-top:0;" onclick="confirmResolve(true)" id="confirm-ok-btn">Conferma</button>
+    </div>
+  </div>
+</div>
+
+<!-- GAME OVER MODAL -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h2>Fine Partita!</h2>
+    <div class="subtitle" id="modal-loser-text"></div>
+    <div id="modal-results"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal()">Chiudi</button>
+      <button class="btn-primary" style="flex:1" onclick="newGame()">Nuova Partita</button>
+    </div>
+  </div>
+</div>
+
+<!-- TIEBREAK OVERLAY -->
+<div class="overlay" id="overlay-tiebreak">
+  <div class="modal" style="max-width:520px;">
+    <div style="text-align:center;font-size:2.2rem;margin-bottom:4px;">🃏</div>
+    <h2 id="tb-title">Spareggio!</h2>
+    <div class="subtitle" id="tb-subtitle"></div>
+    <div id="tb-body"></div>
+  </div>
+</div>
+
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-app.js";
+import { getFirestore, doc, collection, setDoc, getDoc, onSnapshot, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyD4Efz5cWbBFZ13ajRKEAfXMAujce4Hmuw",
+  authDomain: "carte-82ed5.firebaseapp.com",
+  projectId: "carte-82ed5",
+  storageBucket: "carte-82ed5.firebasestorage.app",
+  messagingSenderId: "276715037983",
+  appId: "1:276715037983:web:987ccc4478dcae67c93c2a"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// Expose to global scope so non-module script can use it
+window._db = db;
+window._fsLib = { doc, collection, setDoc, getDoc, onSnapshot, updateDoc, arrayUnion };
+window._firebaseReady = true;
+window.dispatchEvent(new Event('firebase-ready'));
+</script>
+
+<script>
+// ---- STATE ----
+let state = {
+  players: [],
+  round: 1,
+  active: false,
+  startTime: null
+};
+let history = [];
+let roster = [];
+let selectedPlayers = new Set();
+let currentSession = null;
+
+function saveRoster() {
+  syncToFirebase();
+}
+
+// ---- CUSTOM CONFIRM ----
+let confirmCallback = null;
+function customConfirm(message, onConfirm, okLabel = 'Conferma') {
+  document.getElementById('confirm-message').textContent = message;
+  document.getElementById('confirm-ok-btn').textContent = okLabel;
+  document.getElementById('overlay-confirm').classList.add('show');
+  confirmCallback = onConfirm;
+}
+function confirmResolve(result) {
+  document.getElementById('overlay-confirm').classList.remove('show');
+  if (result && confirmCallback) confirmCallback();
+  confirmCallback = null;
+}
+
+// ---- FIREBASE ROOM ----
+let currentRoom = null;
+let _unsubscribe = null;
+
+async function joinRoom() {
+  const input = document.getElementById('room-code-input');
+  const code = input.value.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+  const errEl = document.getElementById('room-error');
+  const btn = document.getElementById('btn-join-room');
+
+  if (code.length < 2) { errEl.textContent = 'Inserisci almeno 2 caratteri'; return; }
+  if (!window._firebaseReady) { errEl.textContent = 'Connessione in corso, riprova...'; return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Connessione...';
+  errEl.textContent = '';
+
+  try {
+    const { doc, setDoc, getDoc, onSnapshot } = window._fsLib;
+    const db = window._db;
+    const roomRef = doc(db, 'rooms', code);
+    const snap = await getDoc(roomRef);
+
+    if (!snap.exists()) {
+      await setDoc(roomRef, { code, createdAt: Date.now(), history: [], roster: [], session: null });
+    }
+
+    currentRoom = code;
+    localStorage.setItem('cardgame_room', code);
+    document.getElementById('room-indicator').style.display = 'block';
+    document.getElementById('room-indicator-code').textContent = code;
+    document.getElementById('overlay-room').classList.remove('show');
+
+    if (_unsubscribe) _unsubscribe();
+    _unsubscribe = onSnapshot(roomRef, (snap) => {
+      if (!snap.exists()) return;
+      const data = snap.data();
+      history = data.history || [];
+      roster = data.roster || [];
+      currentSession = data.session || null;
+      const liveGame = data.liveGame || null;
+
+      const activePage = document.querySelector('.page.active')?.id;
+      if (activePage === 'page-history') renderHistory();
+      if (activePage === 'page-session') renderSession();
+      renderRoster();
+
+      if (liveGame && liveGame.active) {
+        if (liveGame.adminDevice === deviceId && !state.active) {
+          // Sono l'admin — ripristino la partita dopo un refresh
+          state.players = liveGame.players.map(p => ({
+            name: p.name, total: p.total, scores: p.scores || [],
+            closures: p.closures || 0, resetCount: p.resetCount || 0
+          }));
+          state.round = liveGame.round;
+          state.startTime = liveGame.startTime;
+          state.active = true;
+          roundCloser = liveGame.roundCloser || null;
+          roundScores = liveGame.roundScores || [];
+          scoreStep = liveGame.scoreStep || 0;
+          showPage('game');
+          renderGame();
+          showNotification('Partita ripristinata ✓');
+        } else if (liveGame.adminDevice !== deviceId) {
+          // Sono uno spettatore
+          renderLiveSpectator(liveGame);
+        }
+      } else if (!liveGame && !state.active) {
+        hideLiveSpectator();
+      }
+    });
+
+  } catch(e) {
+    errEl.textContent = 'Errore di connessione. Controlla la rete.';
+    console.error(e);
+  }
+  btn.disabled = false;
+  btn.textContent = 'Entra nella Stanza';
+}
+
+// Genera o recupera un ID univoco per questo dispositivo
+let deviceId = localStorage.getItem('cardgame_device');
+if (!deviceId) {
+  deviceId = 'dev_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+  localStorage.setItem('cardgame_device', deviceId);
+}
+
+async function syncToFirebase() {
+  if (!currentRoom || !window._firebaseReady) return;
+  try {
+    const { doc, updateDoc } = window._fsLib;
+    const liveGame = state.active ? {
+      active: true,
+      adminDevice: deviceId,
+      round: state.round,
+      roundCloser,
+      roundScores,
+      scoreStep,
+      startTime: state.startTime,
+      players: state.players.map(p => ({
+        name: p.name, total: p.total, scores: p.scores,
+        closures: p.closures || 0, resetCount: p.resetCount || 0
+      }))
+    } : null;
+    await updateDoc(doc(window._db, 'rooms', currentRoom), {
+      history, roster, session: currentSession, liveGame
+    });
+  } catch(e) { console.error('Sync error:', e); }
+}
+
+function saveSession() { syncToFirebase(); }
+
+// ---- PRIZE CALC ----
+function calcPrizes(n) {
+  const prizes = [];
+  const isOdd = n % 2 !== 0;
+  const mid = Math.floor(n / 2);
+  for (let i = 0; i < n; i++) {
+    if (isOdd && i === mid) { prizes.push(0); continue; }
+    if (i < mid) prizes.push((mid - i) * 5);
+    else prizes.push(-(i - mid - (isOdd ? 1 : 0) + 1) * 5);
+  }
+  if (!isOdd) {
+    for (let i = 0; i < n; i++) {
+      const half = n / 2;
+      if (i + 1 <= half) prizes[i] = (half - i) * 5;
+      else prizes[i] = -(i + 1 - half) * 5;
+    }
+  }
+  return prizes;
+}
+
+// ---- ROSTER / SETUP ----
+function renderRoster() {
+  const grid = document.getElementById('roster-grid');
+  if (roster.length === 0) {
+    grid.innerHTML = '<div style="color:var(--muted);font-family:\'DM Mono\',monospace;font-size:0.8rem;padding:8px 0;grid-column:1/-1;">Nessun giocatore salvato. Aggiungine uno!</div>';
+  } else {
+    grid.innerHTML = roster.map((p, i) => {
+      const sel = selectedPlayers.has(p.name);
+      return `
+        <div class="roster-chip ${sel ? 'selected' : ''}" onclick="togglePlayer('${escName(p.name)}')">
+          <span class="chip-name">${p.name}</span>
+          <div class="chip-check">${sel ? '✓' : ''}</div>
+          <button class="chip-del" onclick="deleteRosterPlayer(event, ${i})" title="Rimuovi">✕</button>
+        </div>`;
+    }).join('');
+  }
+  updateSetup();
+}
+
+function escName(n) { return n.replace(/'/g, "\\'"); }
+
+function togglePlayer(name) {
+  if (selectedPlayers.has(name)) selectedPlayers.delete(name);
+  else selectedPlayers.add(name);
+  renderRoster();
+}
+
+function addNewPlayer() {
+  const input = document.getElementById('new-player-input');
+  const name = input.value.trim();
+  if (!name) return;
+  if (roster.find(p => p.name.toLowerCase() === name.toLowerCase())) {
+    showNotification('Giocatore già presente!');
+    return;
+  }
+  roster.push({ name });
+  selectedPlayers.add(name);
+  saveRoster();
+  input.value = '';
+  renderRoster();
+}
+
+function deleteRosterPlayer(e, idx) {
+  e.stopPropagation();
+  const name = roster[idx].name;
+  customConfirm(`Rimuovere "${name}" dalla lista?`, () => {
+    roster.splice(idx, 1);
+    selectedPlayers.delete(name);
+    saveRoster();
+    renderRoster();
+  }, 'Rimuovi');
+}
+
+function updateSetup() {
+  const names = [...selectedPlayers];
+  const n = names.length;
+  const btn = document.getElementById('btn-start');
+  btn.disabled = n < 2;
+
+  const countEl = document.getElementById('selected-count');
+  if (n === 0) countEl.textContent = 'Nessun giocatore selezionato';
+  else if (n === 1) countEl.textContent = '1 giocatore selezionato';
+  else countEl.textContent = `${n} giocatori selezionati`;
+
+  const preview = document.getElementById('prize-preview');
+  if (n < 2) {
+    preview.innerHTML = '<div style="color:var(--muted);font-family:\'DM Mono\',monospace;font-size:0.8rem;">Seleziona almeno 2 giocatori</div>';
+    return;
+  }
+  const prizes = calcPrizes(n);
+  const medals = ['🥇','🥈','🥉'];
+  let html = '<div class="prize-preview">';
+  for (let i = 0; i < n; i++) {
+    const p = prizes[i];
+    const cls = p > 0 ? 'positive' : p < 0 ? 'negative' : 'neutral';
+    const label = p > 0 ? `+€${p}` : p < 0 ? `-€${Math.abs(p)}` : '€0';
+    const medal = medals[i] || `${i+1}°`;
+    html += `<div class="prize-row"><span class="pos">${medal} ${i+1}° posto</span><span class="amount ${cls}">${label}</span></div>`;
+  }
+  html += '</div>';
+  preview.innerHTML = html;
+}
+
+function renderLiveSpectator(liveGame) {
+  if (state.active) return; // sono io che sto giocando, non mostrare
+  const overlay = document.getElementById('overlay-spectator');
+  const sb = document.getElementById('spec-scoreboard');
+  const roundEl = document.getElementById('spec-round');
+  if (!overlay) return;
+
+  roundEl.textContent = liveGame.round || 1;
+  const sorted = [...liveGame.players].sort((a, b) => a.total - b.total);
+  sb.innerHTML = sorted.map((p, i) => {
+    const pct = Math.min(100, (p.total / 100) * 100);
+    const barColor = p.total >= 80 ? '#c0392b' : p.total >= 60 ? '#e67e22' : '#c9a84c';
+    const danger = p.total >= 80 ? `animation:dangerPulse 2s ease-in-out infinite;border-color:rgba(231,76,60,0.7);` : '';
+    return `
+      <div style="display:grid;grid-template-columns:32px 1fr 90px 50px;align-items:center;gap:12px;
+        background:var(--felt2);border:1px solid var(--border2);border-radius:10px;padding:14px 18px;${danger}">
+        <span style="font-family:'Cinzel',serif;font-size:0.85rem;color:var(--gold);font-weight:700;">${i+1}</span>
+        <span style="font-size:1rem;font-weight:600;">${p.name}</span>
+        <div style="height:3px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden;">
+          <div style="height:100%;width:${pct}%;background:${barColor};border-radius:2px;transition:width 0.5s;"></div>
+        </div>
+        <span style="font-family:'Cinzel',serif;font-size:1.1rem;font-weight:700;text-align:right;
+          color:${p.total >= 80 ? 'var(--red2)' : 'var(--text)'};">${p.total}</span>
+      </div>`;
+  }).join('');
+
+  overlay.classList.add('show');
+}
+
+function hideLiveSpectator() {
+  document.getElementById('overlay-spectator')?.classList.remove('show');
+  updateSetup();
+}
+
+async function forceEndLiveGame() {
+  if (!currentRoom || !window._firebaseReady) return;
+  try {
+    const { doc, updateDoc } = window._fsLib;
+    await updateDoc(doc(window._db, 'rooms', currentRoom), { liveGame: null });
+    showNotification('Partita chiusa forzatamente');
+  } catch(e) { console.error(e); }
+}
+
+function startGame() {
+  const names = [...selectedPlayers];
+  if (names.length < 2) return;
+  if (!currentSession) {
+    const now = new Date();
+    currentSession = {
+      id: Date.now(),
+      startDate: now.toLocaleDateString('it-IT', { day:'2-digit', month:'2-digit', year:'numeric' }),
+      startTime: now.toLocaleTimeString('it-IT', { hour:'2-digit', minute:'2-digit' }),
+      games: []
+    };
+    saveSession();
+  }
+  state.players = names.map(n => ({ name: n, scores: [], total: 0 }));
+  state.round = 1;
+  state.active = true;
+  state.startTime = Date.now();
+  syncToFirebase(); // pubblica liveGame
+  showPage('game');
+  renderGame();
+}
+
+// ---- GAME ----
+let roundCloser = null;       // name of player who closed, or null
+let roundScores = [];         // temp scores being entered
+let scoreStep = 0;            // which player we're entering for
+
+function renderGame() {
+  document.getElementById('round-label').textContent = `Round ${state.round}`;
+  document.getElementById('round-label-2').textContent = `Round ${state.round}`;
+  document.getElementById('round-label-3').textContent = `Round ${state.round}`;
+  showGameView('scoreboard');
+  renderScoreboard();
+}
+
+function showGameView(name) {
+  ['scoreboard','closer','scores'].forEach(v => {
+    document.getElementById('view-' + v).style.display = v === name ? 'block' : 'none';
+  });
+}
+
+function renderScoreboard() {
+  const sorted = [...state.players].sort((a, b) => a.total - b.total);
+  let html = '';
+  sorted.forEach((p, i) => {
+    const pct = Math.min(100, (p.total / 100) * 100);
+    const barColor = p.total >= 80 ? '#c0392b' : p.total >= 60 ? '#e67e22' : '#c9a84c';
+    const danger = p.total >= 80 ? 'danger' : '';
+    html += `
+      <div class="player-score-row ${danger}">
+        <div class="rank-num">${i+1}</div>
+        <div class="player-name-score">
+          <span class="pname">${p.name}</span>
+          <span class="pscore">${p.scores.length} round${p.closures ? ` · 🔒${p.closures}` : ''}</span>
+        </div>
+        <div class="score-bar-wrap">
+          <div class="score-bar"><div class="score-bar-fill" style="width:${pct}%;background:${barColor}"></div></div>
+        </div>
+        <div class="total-score ${p.total >= 80 ? 'high' : ''}">${p.total}</div>
+      </div>`;
+  });
+  document.getElementById('scoreboard').innerHTML = html;
+}
+
+// STEP 1: chi ha chiuso
+function openRoundStep1() {
+  roundCloser = null;
+  const grid = document.getElementById('closer-grid');
+  grid.innerHTML = state.players.map(p => `
+    <div class="closer-chip" id="closer-${escName(p.name)}" onclick="selectCloser('${escName(p.name)}')">
+      <span class="chip-name">${p.name}</span>
+      <div class="chip-check">→</div>
+    </div>`).join('');
+  showGameView('closer');
+}
+
+function selectCloser(name) {
+  roundCloser = name;
+  startScoreEntry();
+}
+
+function backToCloser() {
+  // Only works on first player of the round
+  if (scoreStep === 0) {
+    openRoundStep1();
+  } else {
+    scorePrev();
+  }
+}
+
+function skipCloser() {
+  roundCloser = null;
+  startScoreEntry();
+}
+
+function goToScores() {
+  startScoreEntry();
+}
+
+// STEP 2: punteggi
+function startScoreEntry() {
+  roundScores = new Array(state.players.length).fill(null);
+  scoreStep = 0;
+  showGameView('scores');
+  showScoreStep();
+}
+
+function showScoreStep() {
+  const p = state.players[scoreStep];
+  const n = state.players.length;
+  document.getElementById('score-player-name').textContent = p.name;
+  document.getElementById('score-progress').textContent = `${scoreStep + 1} / ${n}`;
+  const input = document.getElementById('score-big-input');
+  input.value = roundScores[scoreStep] !== null ? roundScores[scoreStep] : '';
+  updateScoreSub();
+  setTimeout(() => { input.focus(); input.select(); }, 80);
+
+  const backBtn = document.getElementById('btn-score-prev');
+  if (backBtn) {
+    backBtn.style.opacity = scoreStep === 0 ? '1' : '1'; // always visible
+  }
+  document.getElementById('btn-score-next').textContent = scoreStep === n - 1 ? '✓ Conferma' : 'Avanti →';
+
+  input.oninput = updateScoreSub;
+}
+
+function adjustScore(delta) {
+  const input = document.getElementById('score-big-input');
+  const current = parseInt(input.value) || 0;
+  const next = Math.max(0, current + delta);
+  input.value = next;
+  updateScoreSub();
+}
+
+function updateScoreSub() {
+  const p = state.players[scoreStep];
+  const raw = parseInt(document.getElementById('score-big-input').value) || 0;
+  const newTotal = p.total + raw;
+  const sub = document.getElementById('score-entry-sub');
+  if (newTotal === 100) {
+    sub.innerHTML = `Totale: ${p.total} + <span class="will-be" style="color:var(--gold)">${raw}</span> = 100 → <span class="will-be" style="color:var(--gold)">torna a 50! 🔄</span>`;
+  } else {
+    const overClass = newTotal > 100 ? 'danger' : '';
+    sub.innerHTML = `Totale: ${p.total} + <span class="will-be ${overClass}">${raw}</span> = <span class="will-be ${overClass}">${newTotal}</span>${newTotal > 100 ? ' ⚠️' : ''}`;
+  }
+}
+
+function scoreNext() {
+  const raw = parseInt(document.getElementById('score-big-input').value);
+  const val = isNaN(raw) ? 0 : Math.max(0, raw);
+  roundScores[scoreStep] = val;
+  if (scoreStep < state.players.length - 1) {
+    scoreStep++;
+    showScoreStep();
+  } else {
+    commitRound();
+  }
+}
+
+function scorePrev() {
+  if (scoreStep === 0) return;
+  const raw = parseInt(document.getElementById('score-big-input').value);
+  roundScores[scoreStep] = isNaN(raw) ? 0 : Math.max(0, raw);
+  scoreStep--;
+  showScoreStep();
+}
+
+function commitRound() {
+  // Register closer
+  if (roundCloser) {
+    const cp = state.players.find(p => p.name === roundCloser);
+    if (cp) cp.closures = (cp.closures || 0) + 1;
+  }
+  // Apply scores
+  state.players.forEach((p, i) => {
+    const val = roundScores[i] ?? 0;
+    p.scores.push(val);
+    p.total += val;
+    // Regola speciale: esattamente 100 → torna a 50
+    if (p.total === 100) {
+      p.total = 50;
+      p.resetCount = (p.resetCount || 0) + 1;
+    }
+  });
+  state.round++;
+  syncToFirebase(); // aggiorna punteggi live
+
+  // Check loser (chi ha SUPERATO 100, non chi è arrivato a 100)
+  if (state.players.some(p => p.total > 100)) {
+    endGame();
+    return;
+  }
+  renderGame();
+}
+
+// ---- TIEBREAK STATE ----
+let tbSorted = [];       // final sorted array after all tiebreaks resolved
+let tbPending = [];      // list of tiebreak groups still to resolve [{positions:[i,j], players:[...]}]
+let tbCurrentGroup = null;
+
+function endGame() {
+  const sorted = [...state.players].sort((a, b) => a.total - b.total);
+
+  // Detect tied groups
+  const groups = [];
+  let i = 0;
+  while (i < sorted.length) {
+    let j = i + 1;
+    while (j < sorted.length && sorted[j].total === sorted[i].total) j++;
+    if (j - i > 1) groups.push({ start: i, players: sorted.slice(i, j) });
+    i = j;
+  }
+
+  tbSorted = sorted;
+
+  if (groups.length === 0) {
+    finishGame(sorted);
+  } else {
+    // Queue all tie groups for resolution
+    tbPending = groups.slice();
+    resolveNextTiebreak();
+  }
+}
+
+function resolveNextTiebreak() {
+  if (tbPending.length === 0) {
+    finishGame(tbSorted);
+    return;
+  }
+  tbCurrentGroup = tbPending.shift();
+  const grp = tbCurrentGroup;
+  const n = grp.players.length;
+  const posLabel = grp.players.map((p,i) => `${grp.start + i + 1}°`).join('/');
+
+  document.getElementById('tb-title').textContent = n === 2 ? 'Spareggio!' : 'Pareggio multiplo!';
+  document.getElementById('tb-subtitle').textContent =
+    `${grp.players.map(p => p.name).join(', ')} sono tutti a ${grp.players[0].total} punti (${posLabel} posto)`;
+
+  let html = '';
+
+  if (n === 2) {
+    // Standard 2-player tiebreak: pick who drew the lower card
+    html = `
+      <p style="font-family:'DM Mono',monospace;font-size:0.8rem;color:var(--muted);text-align:center;margin-bottom:20px;letter-spacing:1px;">
+        CHI HA PESCATO LA CARTA PIÙ BASSA?
+      </p>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        ${grp.players.map((p, idx) => `
+          <button class="tb-pick-btn" onclick="resolveTiebreak2(${idx})">
+            <span class="tb-suit">🃏</span>
+            <span>${p.name}</span>
+            <span class="tb-arrow">→ vince lo spareggio</span>
+          </button>`).join('')}
+      </div>`;
+  } else {
+    // 3+ players: manual money entry for each
+    html = `
+      <p style="font-family:'DM Mono',monospace;font-size:0.8rem;color:var(--muted);text-align:center;margin-bottom:20px;letter-spacing:1px;">
+        PAREGGIO TRA ${n} GIOCATORI — INSERISCI IL SALDO MANUALMENTE
+      </p>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">
+        ${grp.players.map((p, idx) => `
+          <div style="display:flex;align-items:center;gap:12px;background:var(--surface2);border-radius:8px;padding:12px 16px;">
+            <span style="flex:1;font-size:0.95rem;">${p.name}</span>
+            <input type="number" id="tb-manual-${idx}" placeholder="0" inputmode="numeric"
+              style="width:90px;background:var(--bg);border:1px solid var(--border);color:var(--text);
+              padding:8px 10px;border-radius:6px;font-family:'DM Mono',monospace;font-size:1rem;
+              text-align:center;outline:none;">
+          </div>`).join('')}
+      </div>
+      <button class="btn-primary" onclick="resolveManual()">Conferma saldi</button>`;
+  }
+
+  document.getElementById('tb-body').innerHTML = html;
+  document.getElementById('overlay-tiebreak').classList.add('show');
+}
+
+function resolveTiebreak2(winnerIdx) {
+  // winnerIdx = 0 or 1 within the tied group
+  const grp = tbCurrentGroup;
+  const loserIdx = winnerIdx === 0 ? 1 : 0;
+  // Swap in tbSorted: winner takes the better position
+  const posA = grp.start;
+  const posB = grp.start + 1;
+  tbSorted[posA] = grp.players[winnerIdx];
+  tbSorted[posB] = grp.players[loserIdx];
+
+  document.getElementById('overlay-tiebreak').classList.remove('show');
+  resolveNextTiebreak();
+}
+
+function resolveManual() {
+  const grp = tbCurrentGroup;
+  grp.players.forEach((p, idx) => {
+    const val = parseFloat(document.getElementById(`tb-manual-${idx}`)?.value) || 0;
+    p._manualMoney = val;
+  });
+  document.getElementById('overlay-tiebreak').classList.remove('show');
+  resolveNextTiebreak();
+}
+
+function finishGame(sorted) {
+  const n = sorted.length;
+  const prizes = calcPrizes(n);
+
+  // Apply manual overrides where set
+  const finalPrizes = sorted.map((p, i) => p._manualMoney !== undefined ? p._manualMoney : prizes[i]);
+
+  const durationMs = state.startTime ? Date.now() - state.startTime : 0;
+  const durationMin = Math.round(durationMs / 60000);
+
+  const record = {
+    date: new Date().toLocaleDateString('it-IT', { day:'2-digit', month:'2-digit', year:'numeric' }),
+    timestamp: Date.now(),
+    rounds: state.round - 1,
+    duration: durationMin,
+    players: sorted.map((p, i) => ({
+      name: p.name,
+      total: p.total,
+      position: i + 1,
+      money: finalPrizes[i],
+      closures: p.closures || 0,
+      roundScores: [...p.scores]
+    }))
+  };
+  history.unshift(record);
+  syncToFirebase();
+  addGameToSession(record);
+
+  const losers = sorted.filter(p => p.total > 100);
+  const loserNames = losers.map(p => p.name).join(', ');
+  const loserText = losers.length > 1
+    ? `${loserNames} hanno superato 100 punti!`
+    : `${loserNames} ha superato 100 punti!`;
+  document.getElementById('modal-loser-text').textContent = loserText;
+
+  const medals = ['🥇','🥈','🥉'];
+  let html = '';
+  sorted.forEach((p, i) => {
+    const money = finalPrizes[i];
+    const cls = money > 0 ? 'pos' : money < 0 ? 'neg' : 'zero';
+    const label = money > 0 ? `+€${money}` : money < 0 ? `-€${Math.abs(money)}` : '€0';
+    const medal = medals[i] || `${i+1}°`;
+    const closureText = p.closures ? `🔒 ${p.closures}` : '';
+    html += `
+      <div class="final-row ${money < 0 ? 'loser' : ''}">
+        <div class="medal">${medal}</div>
+        <div class="fname">${p.name} <span style="color:var(--muted);font-size:0.78rem;font-family:'DM Mono',monospace">${p.total}pt ${closureText}</span></div>
+        <div class="fmoney ${cls}">${label}</div>
+      </div>`;
+  });
+  document.getElementById('modal-results').innerHTML = html;
+  state.active = false;
+  syncToFirebase(); // rimuove liveGame dal Firebase
+  document.getElementById('overlay').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('overlay').classList.remove('show');
+  showPage('history');
+}
+
+function newGame() {
+  document.getElementById('overlay').classList.remove('show');
+  showPage('setup');
+}
+
+function confirmAbandon() {
+  customConfirm('Abbandonare la partita? I dati del round corrente verranno persi.', () => {
+    state.active = false;
+    syncToFirebase(); // rimuove liveGame
+    showPage('setup');
+  }, 'Abbandona');
+}
+
+// ---- HISTORY ----
+function renderHistory() {
+  const cont = document.getElementById('history-content');
+  const btnClear = document.getElementById('btn-clear-history');
+
+  if (history.length === 0) {
+    btnClear.style.display = 'none';
+    cont.innerHTML = `
+      <div class="empty-state">
+        <div class="icon">🃏</div>
+        <p>Nessuna partita ancora giocata</p>
+      </div>`;
+    return;
+  }
+
+  btnClear.style.display = 'block';
+
+  // ---- Aggregate stats per player ----
+  const ps = {}; // playerStats
+  history.forEach(game => {
+    game.players.forEach(p => {
+      if (!ps[p.name]) ps[p.name] = { wins: 0, losses: 0, games: 0, money: 0, closures: 0, totalRounds: 0, sumRoundPts: 0, sumFinalPts: 0 };
+      ps[p.name].games++;
+      ps[p.name].money += p.money;
+      ps[p.name].closures += (p.closures || 0);
+      ps[p.name].sumFinalPts += p.total;
+      if (p.roundScores) {
+        ps[p.name].totalRounds += p.roundScores.length;
+        ps[p.name].sumRoundPts += p.roundScores.reduce((a, b) => a + b, 0);
+      }
+      if (p.position === 1) ps[p.name].wins++;
+      if (p.position === game.players.length) ps[p.name].losses++;
+    });
+  });
+
+  const entries = Object.entries(ps);
+  const topWinner = [...entries].sort((a,b) => b[1].wins - a[1].wins)[0];
+  const topEarner = [...entries].sort((a,b) => b[1].money - a[1].money)[0];
+  const totalRounds = history.reduce((a, g) => a + (g.rounds || 0), 0);
+
+  // ---- Global summary cards ----
+  let html = `
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="slabel">Partite giocate</div>
+        <div class="svalue">${history.length}</div>
+      </div>
+      <div class="stat-card">
+        <div class="slabel">Round totali</div>
+        <div class="svalue">${totalRounds}</div>
+      </div>
+      <div class="stat-card">
+        <div class="slabel">Re delle vittorie</div>
+        <div class="svalue">${topWinner[1].wins}</div>
+        <div class="sname">${topWinner[0]}</div>
+      </div>
+      <div class="stat-card">
+        <div class="slabel">Il più ricco</div>
+        <div class="svalue" style="color:var(--green)">${topEarner[1].money >= 0 ? '+' : ''}€${topEarner[1].money}</div>
+        <div class="sname">${topEarner[0]}</div>
+      </div>
+    </div>`;
+
+  // ---- Per-player stats table ----
+  const lbSorted = [...entries].sort((a,b) => b[1].wins - a[1].wins);
+
+  // Store for sorting
+  statsData = entries.map(([name, s]) => ({
+    name,
+    games: s.games,
+    wins: s.wins,
+    losses: s.losses,
+    totalRounds: s.totalRounds,
+    closures: s.closures,
+    avgRound: s.totalRounds > 0 ? s.sumRoundPts / s.totalRounds : -1,
+    avgFinal: s.games > 0 ? s.sumFinalPts / s.games : -1,
+    money: s.money
+  }));
+  currentSortKey = 'wins';
+  currentSortDir = -1;
+
+  html += `<div class="leaderboard">
+    <h3>Statistiche giocatori</h3>
+    <div class="stats-table"><div class="stats-table-inner">
+      <div class="st-header">
+        <span>Giocatore</span>
+        <span class="st-sort" onclick="sortStats('games')">Part.<span class="sort-icon" id="si-games"></span></span>
+        <span class="st-sort" onclick="sortStats('wins')">Vinte<span class="sort-icon" id="si-wins"></span></span>
+        <span class="st-sort" onclick="sortStats('losses')">Perse<span class="sort-icon" id="si-losses"></span></span>
+        <span class="st-sort" onclick="sortStats('totalRounds')">Round<span class="sort-icon" id="si-totalRounds"></span></span>
+        <span class="st-sort" onclick="sortStats('closures')">Chius.<span class="sort-icon" id="si-closures"></span></span>
+        <span class="st-sort" onclick="sortStats('avgRound')">M/Round<span class="sort-icon" id="si-avgRound"></span></span>
+        <span class="st-sort" onclick="sortStats('avgFinal')">M/Final<span class="sort-icon" id="si-avgFinal"></span></span>
+        <span class="st-sort" onclick="sortStats('money')">Saldo<span class="sort-icon" id="si-money"></span></span>
+      </div>
+      <div id="st-body"></div>
+    </div></div>
+  </div>`;
+
+  // ---- Past games ----
+  html += '<div class="past-games"><h3>Partite recenti</h3>';
+  history.forEach(game => {
+    const winner = game.players[0];
+    const roundsLabel = game.rounds ? ` · ${game.rounds} round` : '';
+    html += `
+      <div class="game-card">
+        <div class="game-card-header">
+          <span class="gdate">${game.date}${roundsLabel}</span>
+          <span class="gwinner">🥇 ${winner.name}</span>
+        </div>
+        <div class="game-players">`;
+    game.players.forEach(p => {
+      const mc = p.money > 0 ? 'pos' : p.money < 0 ? 'neg' : '';
+      const ml = p.money > 0 ? `+€${p.money}` : `€${p.money}`;
+      const cl = p.closures ? ` 🔒${p.closures}` : '';
+      html += `<div class="game-player-chip">${p.name}${cl} <span class="chip-money ${mc}">${ml}</span></div>`;
+    });
+    html += '</div></div>';
+  });
+  html += '</div>';
+
+  cont.innerHTML = html;
+  renderStatsBody();
+}
+
+let statsData = [];
+let currentSortKey = 'wins';
+let currentSortDir = -1; // -1 = descending, 1 = ascending
+
+function sortStats(key) {
+  if (currentSortKey === key) {
+    currentSortDir *= -1;
+  } else {
+    currentSortKey = key;
+    currentSortDir = -1;
+  }
+  renderStatsBody();
+}
+
+function renderStatsBody() {
+  const body = document.getElementById('st-body');
+  if (!body) return;
+
+  // Update sort icons
+  const keys = ['games','wins','losses','totalRounds','closures','avgRound','avgFinal','money'];
+  keys.forEach(k => {
+    const el = document.getElementById('si-' + k);
+    if (el) el.textContent = k === currentSortKey ? (currentSortDir === -1 ? ' ↓' : ' ↑') : '';
+  });
+
+  const sorted = [...statsData].sort((a, b) => {
+    const av = a[currentSortKey];
+    const bv = b[currentSortKey];
+    return (bv - av) * currentSortDir * -1;
+  });
+
+  const medals = ['🥇','🥈','🥉'];
+  body.innerHTML = sorted.map((s, i) => {
+    const avgRoundDisplay = s.avgRound >= 0 ? s.avgRound.toFixed(1) : '—';
+    const avgFinalDisplay = s.avgFinal >= 0 ? s.avgFinal.toFixed(1) : '—';
+    const mc = s.money > 0 ? 'pos' : s.money < 0 ? 'neg' : '';
+    const ml = s.money > 0 ? `+€${s.money}` : `€${s.money}`;
+    const medal = medals[i] || `${i+1}`;
+    return `
+      <div class="st-row">
+        <span class="st-name"><span class="st-medal">${medal}</span>${s.name}</span>
+        <span class="st-val">${s.games}</span>
+        <span class="st-val">${s.wins}</span>
+        <span class="st-val ${s.losses > 0 ? 'neg' : ''}">${s.losses}</span>
+        <span class="st-val">${s.totalRounds}</span>
+        <span class="st-val">${s.closures}</span>
+        <span class="st-val">${avgRoundDisplay}</span>
+        <span class="st-val">${avgFinalDisplay}</span>
+        <span class="st-val ${mc}">${ml}</span>
+      </div>`;
+  }).join('');
+}
+
+function confirmClearHistory() {
+  customConfirm('Cancellare tutto lo storico? Questa azione è irreversibile.', () => {
+    history = [];
+    syncToFirebase();
+    renderHistory();
+    showNotification('Storico cancellato');
+  }, 'Cancella');
+}
+
+// ---- SESSION ----
+function startSession() {
+  if (currentSession && currentSession.games.length > 0) {
+    customConfirm('C\'è già una sessione in corso. Vuoi iniziarne una nuova?', () => {
+      endSessionSilent();
+      _createSession();
+    }, 'Nuova sessione');
+    return;
+  }
+  _createSession();
+}
+
+function _createSession() {
+  const now = new Date();
+  currentSession = {
+    id: Date.now(),
+    startDate: now.toLocaleDateString('it-IT', { day:'2-digit', month:'2-digit', year:'numeric' }),
+    startTime: now.toLocaleTimeString('it-IT', { hour:'2-digit', minute:'2-digit' }),
+    games: []
+  };
+  saveSession();
+  renderSession();
+  showNotification('Sessione iniziata!');
+}
+
+function confirmEndSession() {
+  customConfirm('Chiudere la sessione? I dati rimarranno nello storico.', () => {
+    endSessionSilent();
+    showNotification('Sessione chiusa');
+    renderSession();
+  }, 'Fine Sessione');
+}
+
+function endSessionSilent() {
+  currentSession = null;
+  saveSession();
+}
+
+function addGameToSession(record) {
+  if (!currentSession) return;
+  currentSession.games.push(record);
+  saveSession();
+}
+
+function renderSession() {
+  const cont = document.getElementById('session-content');
+  const btnEnd = document.getElementById('btn-end-session');
+
+  if (!currentSession) {
+    btnEnd.style.display = 'none';
+    cont.innerHTML = `
+      <div class="session-no-active">
+        <div class="icon">🎴</div>
+        <p>Nessuna sessione attiva</p>
+        <p style="font-family:'DM Mono',monospace;font-size:0.75rem;color:var(--muted);margin-top:10px;letter-spacing:0;">Inizia una nuova partita per avviare la sessione</p>
+      </div>`;
+    return;
+  }
+
+  btnEnd.style.display = 'block';
+
+  const games = currentSession.games;
+
+  if (games.length === 0) {
+    cont.innerHTML = `
+      <div class="session-badge">Sessione attiva — ${currentSession.startDate} ore ${currentSession.startTime}</div>
+      <div class="empty-state" style="padding:40px 0;">
+        <div class="icon">🃏</div>
+        <p>Nessuna partita ancora giocata</p>
+      </div>`;
+    return;
+  }
+
+  // Aggregate saldi per giocatore
+  const saldi = {};
+  games.forEach(game => {
+    game.players.forEach(p => {
+      if (!saldi[p.name]) saldi[p.name] = 0;
+      saldi[p.name] += p.money;
+    });
+  });
+
+  const saldiSorted = Object.entries(saldi).sort((a, b) => b[1] - a[1]);
+
+  let html = `<div class="session-badge">Sessione attiva — ${currentSession.startDate} ore ${currentSession.startTime} · ${games.length} ${games.length === 1 ? 'partita' : 'partite'}</div>`;
+
+  // Saldo per giocatore
+  html += `<div class="session-saldo-grid">`;
+  saldiSorted.forEach(([name, amount]) => {
+    const cls = amount > 0 ? 'pos' : amount < 0 ? 'neg' : 'zero';
+    const label = amount > 0 ? `+€${amount}` : `€${amount}`;
+    html += `
+      <div class="session-saldo-card">
+        <div class="ss-name">${name}</div>
+        <div class="ss-amount ${cls}">${label}</div>
+      </div>`;
+  });
+  html += `</div>`;
+
+  // Elenco partite
+  html += `<div class="session-games-list"><h3>Partite della serata</h3>`;
+  games.forEach((game, i) => {
+    html += `
+      <div class="session-game-row">
+        <div class="sgr-header">
+          <span class="sgr-num">Partita ${i + 1}</span>
+          <span class="sgr-rounds">${game.rounds || 0} round${game.duration !== undefined ? ` · ${game.duration} min` : ''}</span>
+        </div>
+        <div class="game-players">`;
+    game.players.forEach(p => {
+      const mc = p.money > 0 ? 'pos' : p.money < 0 ? 'neg' : '';
+      const ml = p.money > 0 ? `+€${p.money}` : `€${p.money}`;
+      const isWinner = p.position === 1;
+      html += `<div class="game-player-chip" style="${isWinner ? 'border-color:var(--gold)' : ''}">${isWinner ? '🥇 ' : ''}${p.name} <span class="chip-money ${mc}">${ml}</span></div>`;
+    });
+    html += `</div></div>`;
+  });
+  html += `</div>`;
+
+  cont.innerHTML = html;
+}
+
+// ---- NAV ----
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  const idx = ['setup','game','session','history'].indexOf(id);
+  document.querySelectorAll('.tab-btn')[idx]?.classList.add('active');
+
+  if (id === 'history') renderHistory();
+  if (id === 'session') renderSession();
+  if (id === 'game' && !state.active) { showPage('setup'); return; }
+}
+
+function showNotification(msg) {
+  const el = document.createElement('div');
+  el.className = 'notification';
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 2200);
+}
+
+// ---- INIT ----
+window.addEventListener('firebase-ready', () => {
+  const savedRoom = localStorage.getItem('cardgame_room');
+  if (savedRoom) {
+    document.getElementById('room-code-input').value = savedRoom;
+    joinRoom();
+  }
+});
+renderRoster();
+
+// Blocca zoom pinch (due dita) su tutti i browser mobile
+document.addEventListener('touchstart', function(e) {
+  if (e.touches.length > 1) e.preventDefault();
+}, { passive: false });
+</script>
+</body>
+</html>
