@@ -37,7 +37,7 @@
   /* NAV */
   nav {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 10px 12px;
+    padding: 8px 10px;
     background: rgba(5,14,7,0.96);
     border-bottom: 2px solid var(--gold);
     position: sticky; top: 0; z-index: 100;
@@ -45,28 +45,25 @@
     box-shadow: 0 2px 40px rgba(212,168,67,0.15);
     gap: 6px;
   }
-  .nav-logo { font-family: 'Cinzel Decorative', serif; font-size: 1rem; color: var(--gold2); letter-spacing: 1px; text-shadow: 0 0 20px rgba(212,168,67,0.5); flex-shrink: 0; }
-  .nav-logo span { display: none; }
-  .nav-tabs { display: flex; gap: 2px; flex: 1; justify-content: flex-end; }
+  .nav-logo { display: none; }
+  .nav-tabs { display: flex; gap: 2px; flex: 1; }
   .tab-btn {
     background: none; border: 1px solid transparent; color: var(--muted);
-    padding: 7px 10px; border-radius: 4px; cursor: pointer;
-    font-family: 'Cinzel', serif; font-size: 0.6rem; letter-spacing: 1px; text-transform: uppercase;
-    transition: all 0.2s; white-space: nowrap;
+    padding: 7px 0; border-radius: 4px; cursor: pointer;
+    font-family: 'Cinzel', serif; font-size: 0.58rem; letter-spacing: 0.5px; text-transform: uppercase;
+    transition: all 0.2s; flex: 1; text-align: center; white-space: nowrap;
   }
   .tab-btn.active { border-color: var(--gold); color: var(--gold); background: rgba(212,168,67,0.08); }
   .tab-btn:hover:not(.active) { color: var(--text); border-color: var(--border2); }
   #room-indicator {
-    position: fixed; bottom: 20px; right: 16px;
-    font-family: 'DM Mono', monospace; font-size: 0.65rem; color: var(--gold);
+    font-family: 'DM Mono', monospace; font-size: 0.58rem; color: var(--gold);
     letter-spacing: 1px; display: none; white-space: nowrap;
-    background: rgba(5,14,7,0.95); border: 1px solid var(--gold);
-    border-radius: 20px; padding: 5px 14px; z-index: 99;
-    box-shadow: 0 0 16px rgba(212,168,67,0.2);
+    background: rgba(212,168,67,0.08); border: 1px solid rgba(212,168,67,0.4);
+    border-radius: 4px; padding: 4px 8px;
   }
 
   /* PAGES */
-  .page { display: none; padding: 36px 32px; max-width: 960px; margin: 0 auto; animation: fadeIn 0.35s; }
+  .page { display: none; padding: 36px 32px 80px; max-width: 960px; margin: 0 auto; animation: fadeIn 0.35s; }
   .page.active { display: block; }
   @keyframes fadeIn { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
 
@@ -257,10 +254,9 @@
 
   /* RESPONSIVE */
   @media (max-width: 600px) {
-    nav { padding: 12px 16px; }
-    .nav-logo { font-size: 1rem; }
-    .tab-btn { padding: 6px 12px; font-size: 0.65rem; }
-    .page { padding: 20px 16px; }
+    nav { padding: 8px 10px; }
+    .tab-btn { padding: 6px 0; font-size: 0.55rem; }
+    .page { padding: 20px 16px 40px; }
     .score-bar-wrap { display: none; }
     .player-score-row { grid-template-columns: 28px 1fr auto; }
   }
@@ -296,14 +292,14 @@
     ♠ 4 Carte
     <span>tracker</span>
   </div>
+  <div id="room-indicator">● <span id="room-indicator-code"></span> <button onclick="changeRoom()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-family:'DM Mono',monospace;font-size:0.6rem;margin-left:4px;text-decoration:underline;text-underline-offset:2px;">cambia</button></div>
   <div class="nav-tabs">
-    <button class="tab-btn active" onclick="showPage('setup')">Nuova</button>
-    <button class="tab-btn" id="tab-game" onclick="showPage('game')">Partita</button>
-    <button class="tab-btn" onclick="showPage('session')">Sessione</button>
-    <button class="tab-btn" onclick="showPage('history')">Storico</button>
+    <button class="tab-btn active" onclick="showPage('setup')">♠ Nuova</button>
+    <button class="tab-btn" id="tab-game" onclick="showPage('game')">♥ Partita</button>
+    <button class="tab-btn" onclick="showPage('session')">♦ Sera</button>
+    <button class="tab-btn" onclick="showPage('history')">♣ Storico</button>
   </div>
 </nav>
-<div id="room-indicator">● <span id="room-indicator-code"></span></div>
 
 <!-- SETUP PAGE NEW -->
 <div class="page active" id="page-setup">
@@ -599,7 +595,7 @@ async function joinRoom() {
       renderRoster();
 
       if (liveGame && liveGame.active) {
-        if (liveGame.adminDevice === deviceId && !state.active) {
+        if (liveGame.adminDevice === deviceId && !state.active && !gameJustFinished) {
           // Sono l'admin — ripristino la partita dopo un refresh
           state.players = liveGame.players.map(p => ({
             name: p.name, total: p.total, scores: p.scores || [],
@@ -637,6 +633,7 @@ if (!deviceId) {
   deviceId = 'dev_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
   localStorage.setItem('cardgame_device', deviceId);
 }
+let gameJustFinished = false; // previene il ripristino dopo fine partita regolare
 
 async function syncToFirebase() {
   if (!currentRoom || !window._firebaseReady) return;
@@ -809,6 +806,18 @@ async function forceEndLiveGame() {
   } catch(e) { console.error(e); }
 }
 
+function changeRoom() {
+  if (_unsubscribe) { _unsubscribe(); _unsubscribe = null; }
+  currentRoom = null;
+  localStorage.removeItem('cardgame_room');
+  document.getElementById('room-indicator').style.display = 'none';
+  document.getElementById('room-code-input').value = '';
+  document.getElementById('room-error').textContent = '';
+  document.getElementById('overlay-room').classList.add('show');
+  hideLiveSpectator();
+  state.active = false;
+}
+
 function startGame() {
   const names = [...selectedPlayers];
   if (names.length < 2) return;
@@ -826,6 +835,7 @@ function startGame() {
   state.round = 1;
   state.active = true;
   state.startTime = Date.now();
+  gameJustFinished = false;
   syncToFirebase(); // pubblica liveGame
   showPage('game');
   renderGame();
@@ -1162,6 +1172,7 @@ function finishGame(sorted) {
   });
   document.getElementById('modal-results').innerHTML = html;
   state.active = false;
+  gameJustFinished = true;
   syncToFirebase(); // rimuove liveGame dal Firebase
   document.getElementById('overlay').classList.add('show');
 }
@@ -1179,7 +1190,8 @@ function newGame() {
 function confirmAbandon() {
   customConfirm('Abbandonare la partita? I dati del round corrente verranno persi.', () => {
     state.active = false;
-    syncToFirebase(); // rimuove liveGame
+    gameJustFinished = true;
+    syncToFirebase();
     showPage('setup');
   }, 'Abbandona');
 }
@@ -1224,6 +1236,18 @@ function renderHistory() {
   const topEarner = [...entries].sort((a,b) => b[1].money - a[1].money)[0];
   const totalRounds = history.reduce((a, g) => a + (g.rounds || 0), 0);
 
+  // Record punteggio singolo round
+  let bestRound = { score: 0, name: '—' };
+  history.forEach(game => {
+    game.players.forEach(p => {
+      if (p.roundScores) {
+        p.roundScores.forEach(s => {
+          if (s > bestRound.score) bestRound = { score: s, name: p.name };
+        });
+      }
+    });
+  });
+
   // ---- Global summary cards ----
   let html = `
     <div class="stats-grid">
@@ -1244,6 +1268,11 @@ function renderHistory() {
         <div class="slabel">Il più ricco</div>
         <div class="svalue" style="color:var(--green)">${topEarner[1].money >= 0 ? '+' : ''}€${topEarner[1].money}</div>
         <div class="sname">${topEarner[0]}</div>
+      </div>
+      <div class="stat-card">
+        <div class="slabel">Record round 🏆</div>
+        <div class="svalue" style="color:var(--red2)">${bestRound.score}</div>
+        <div class="sname">${bestRound.name}</div>
       </div>
     </div>`;
 
@@ -1285,7 +1314,7 @@ function renderHistory() {
 
   // ---- Past games ----
   html += '<div class="past-games"><h3>Partite recenti</h3>';
-  history.forEach(game => {
+  history.forEach((game, gi) => {
     const winner = game.players[0];
     const roundsLabel = game.rounds ? ` · ${game.rounds} round` : '';
     html += `
@@ -1293,6 +1322,7 @@ function renderHistory() {
         <div class="game-card-header">
           <span class="gdate">${game.date}${roundsLabel}</span>
           <span class="gwinner">🥇 ${winner.name}</span>
+          <button onclick="deleteGame(${gi})" style="background:none;border:1px solid rgba(192,57,43,0.4);color:var(--red2);border-radius:4px;padding:2px 7px;font-size:0.7rem;cursor:pointer;flex-shrink:0;line-height:1.4;" title="Elimina partita">✕</button>
         </div>
         <div class="game-players">`;
     game.players.forEach(p => {
@@ -1360,6 +1390,15 @@ function renderStatsBody() {
         <span class="st-val ${mc}">${ml}</span>
       </div>`;
   }).join('');
+}
+
+function deleteGame(idx) {
+  customConfirm('Eliminare questa partita dallo storico?', () => {
+    history.splice(idx, 1);
+    syncToFirebase();
+    renderHistory();
+    showNotification('Partita eliminata');
+  }, 'Elimina');
 }
 
 function confirmClearHistory() {
@@ -1478,6 +1517,7 @@ function renderSession() {
         <div class="sgr-header">
           <span class="sgr-num">Partita ${i + 1}</span>
           <span class="sgr-rounds">${game.rounds || 0} round${game.duration !== undefined ? ` · ${game.duration} min` : ''}</span>
+          <button onclick="deleteSessionGame(${i})" style="background:none;border:1px solid rgba(192,57,43,0.4);color:var(--red2);border-radius:4px;padding:2px 7px;font-size:0.7rem;cursor:pointer;flex-shrink:0;line-height:1.4;" title="Elimina partita">✕</button>
         </div>
         <div class="game-players">`;
     game.players.forEach(p => {
@@ -1491,6 +1531,23 @@ function renderSession() {
   html += `</div>`;
 
   cont.innerHTML = html;
+}
+
+function deleteSessionGame(idx) {
+  customConfirm('Eliminare questa partita dalla sessione e dallo storico?', () => {
+    if (!currentSession) return;
+    const game = currentSession.games[idx];
+    // Rimuovi dalla sessione
+    currentSession.games.splice(idx, 1);
+    // Rimuovi anche dallo storico globale (cerca per timestamp)
+    if (game && game.timestamp) {
+      const hi = history.findIndex(h => h.timestamp === game.timestamp);
+      if (hi !== -1) history.splice(hi, 1);
+    }
+    syncToFirebase();
+    renderSession();
+    showNotification('Partita eliminata');
+  }, 'Elimina');
 }
 
 // ---- NAV ----
